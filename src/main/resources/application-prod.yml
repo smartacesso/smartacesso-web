@@ -1,0 +1,31 @@
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:20}
+      minimum-idle: 5
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+smartacesso:
+  security:
+    jwt:
+      secret: ${JWT_SECRET}
+    desktop-api-mode: COMPAT
+    password-upgrade-on-login: false
+
+logging:
+  level:
+    root: INFO
+    br.com.startjob.acesso: INFO
+    org.springframework.security: WARN
