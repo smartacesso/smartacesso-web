@@ -26,7 +26,7 @@ import lombok.Setter;
 public class PedestreEntity extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "ID_PEDESTRE", nullable = false)
     private Long id;
 

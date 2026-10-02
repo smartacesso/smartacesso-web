@@ -25,7 +25,7 @@ import java.util.List;
 public class ClienteEntity extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "ID_CLIENTE", nullable = false)
     private Long id;
 

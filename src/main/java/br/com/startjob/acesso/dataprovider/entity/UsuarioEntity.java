@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 public class UsuarioEntity extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "ID_USUARIO", nullable = false)
     private Long id;
 

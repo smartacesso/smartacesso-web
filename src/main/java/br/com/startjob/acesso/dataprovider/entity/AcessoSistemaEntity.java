@@ -21,7 +21,7 @@ import java.time.LocalDateTime;
 public class AcessoSistemaEntity extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "ID_ACESSO_SISTEMA", nullable = false)
     private Long id;
 

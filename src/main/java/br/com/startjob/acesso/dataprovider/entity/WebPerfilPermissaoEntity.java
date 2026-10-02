@@ -25,7 +25,7 @@ import lombok.Setter;
 public class WebPerfilPermissaoEntity extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "ID_WEB_PERFIL_PERMISSAO", nullable = false)
     private Long id;
 

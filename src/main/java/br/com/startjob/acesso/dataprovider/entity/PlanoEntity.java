@@ -25,7 +25,7 @@ import java.time.LocalDateTime;
 public class PlanoEntity extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "ID_PLANO", nullable = false)
     private Long id;
 

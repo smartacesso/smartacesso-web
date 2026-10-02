@@ -19,7 +19,7 @@ import lombok.Setter;
 public class ParametroEntity extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "ID_PARAMETRO", nullable = false)
     private Long id;
 
