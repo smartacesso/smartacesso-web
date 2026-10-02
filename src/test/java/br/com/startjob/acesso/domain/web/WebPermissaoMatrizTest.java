@@ -1,7 +1,8 @@
 package br.com.startjob.acesso.domain.web;
 
-import br.com.startjob.acesso.domain.enumeration.PerfilAcesso;
-import br.com.startjob.acesso.domain.enumeration.WebPermissao;
+import br.com.startjob.acesso.core.domain.permissao.WebPermissaoMatriz;
+import br.com.startjob.acesso.core.enumeration.PerfilAcesso;
+import br.com.startjob.acesso.core.enumeration.WebPermissao;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

@@ -1,12 +1,13 @@
 package br.com.startjob.acesso.api.app;
 
-import br.com.startjob.acesso.domain.entity.ClienteEntity;
-import br.com.startjob.acesso.domain.entity.PedestreEntity;
-import br.com.startjob.acesso.domain.enumeration.PerfilAcessoApp;
-import br.com.startjob.acesso.domain.enumeration.Status;
-import br.com.startjob.acesso.domain.repository.ClienteRepository;
-import br.com.startjob.acesso.domain.repository.PedestreRepository;
-import br.com.startjob.acesso.security.password.PasswordHasher;
+import br.com.startjob.acesso.dataprovider.entity.ClienteEntity;
+import br.com.startjob.acesso.dataprovider.entity.PedestreEntity;
+import br.com.startjob.acesso.core.enumeration.PerfilAcessoApp;
+import br.com.startjob.acesso.core.enumeration.Status;
+import br.com.startjob.acesso.dataprovider.repository.ClienteRepository;
+import br.com.startjob.acesso.dataprovider.repository.PedestreRepository;
+import br.com.startjob.acesso.entrypoint.api.dto.AppLoginRequest;
+import br.com.startjob.acesso.entrypoint.api.security.password.PasswordHasher;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

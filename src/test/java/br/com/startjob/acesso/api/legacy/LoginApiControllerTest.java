@@ -1,14 +1,14 @@
 package br.com.startjob.acesso.api.legacy;
 
-import br.com.startjob.acesso.domain.entity.ClienteEntity;
-import br.com.startjob.acesso.domain.entity.PlanoEntity;
-import br.com.startjob.acesso.domain.entity.UsuarioEntity;
-import br.com.startjob.acesso.domain.enumeration.PerfilAcesso;
-import br.com.startjob.acesso.domain.enumeration.Status;
-import br.com.startjob.acesso.domain.repository.ClienteRepository;
-import br.com.startjob.acesso.domain.repository.PlanoRepository;
-import br.com.startjob.acesso.domain.repository.UsuarioRepository;
-import br.com.startjob.acesso.security.password.PasswordHasher;
+import br.com.startjob.acesso.dataprovider.entity.ClienteEntity;
+import br.com.startjob.acesso.dataprovider.entity.PlanoEntity;
+import br.com.startjob.acesso.dataprovider.entity.UsuarioEntity;
+import br.com.startjob.acesso.core.enumeration.PerfilAcesso;
+import br.com.startjob.acesso.core.enumeration.Status;
+import br.com.startjob.acesso.dataprovider.repository.ClienteRepository;
+import br.com.startjob.acesso.dataprovider.repository.PlanoRepository;
+import br.com.startjob.acesso.dataprovider.repository.UsuarioRepository;
+import br.com.startjob.acesso.entrypoint.api.security.password.PasswordHasher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,9 +18,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -55,8 +53,8 @@ class LoginApiControllerTest {
         PlanoEntity plano = new PlanoEntity();
         plano.setNome("Plano");
         plano.setStatus(Status.ATIVO);
-        plano.setInicio(new Date());
-        plano.setFim(Date.from(Instant.now().plus(30, ChronoUnit.DAYS)));
+        plano.setInicio(LocalDateTime.now());
+        plano.setFim(LocalDateTime.now().plusDays(30));
         plano.setCliente(cliente);
         planoRepository.save(plano);
 

@@ -1,5 +1,6 @@
 package br.com.startjob.acesso.security.password;
 
+import br.com.startjob.acesso.entrypoint.api.security.password.PasswordHasher;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
