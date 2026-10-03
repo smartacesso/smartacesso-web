@@ -13,16 +13,20 @@ import br.com.startjob.acesso.dataprovider.repository.PedestreRepository;
 import br.com.startjob.acesso.dataprovider.repository.PlanoRepository;
 import br.com.startjob.acesso.dataprovider.repository.UsuarioRepository;
 import br.com.startjob.acesso.entrypoint.api.security.password.PasswordHasher;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
-//@Component
-//@Profile("dev")
+@RequiredArgsConstructor
+@Component
+@Profile("dev")
 public class DevDataInitializer implements ApplicationRunner {
 
     private static final Logger log = LoggerFactory.getLogger(DevDataInitializer.class);
@@ -33,22 +37,6 @@ public class DevDataInitializer implements ApplicationRunner {
     private final PedestreRepository pedestreRepository;
     private final PlanoRepository planoRepository;
     private final PasswordHasher passwordHasher;
-
-    public DevDataInitializer(
-            SmartAcessoProperties properties,
-            ClienteRepository clienteRepository,
-            UsuarioRepository usuarioRepository,
-            PedestreRepository pedestreRepository,
-            PlanoRepository planoRepository,
-            PasswordHasher passwordHasher
-    ) {
-        this.properties = properties;
-        this.clienteRepository = clienteRepository;
-        this.usuarioRepository = usuarioRepository;
-        this.pedestreRepository = pedestreRepository;
-        this.planoRepository = planoRepository;
-        this.passwordHasher = passwordHasher;
-    }
 
     @Override
     @Transactional

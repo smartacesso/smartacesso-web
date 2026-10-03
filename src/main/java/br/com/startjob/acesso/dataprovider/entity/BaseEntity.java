@@ -40,6 +40,7 @@ public class BaseEntity implements Serializable {
     private LocalDateTime dataRemovido;
 
     @JdbcTypeCode(Types.VARCHAR)
+    @Column(name = "UNIQUE_ID")
     private UUID uniqueId;
 
     @PrePersist
