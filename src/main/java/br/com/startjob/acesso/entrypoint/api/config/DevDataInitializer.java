@@ -1,13 +1,13 @@
 package br.com.startjob.acesso.entrypoint.api.config;
 
 import br.com.startjob.acesso.core.config.SmartAcessoProperties;
+import br.com.startjob.acesso.core.enumeration.PerfilAcesso;
+import br.com.startjob.acesso.core.enumeration.PerfilAcessoApp;
+import br.com.startjob.acesso.core.enumeration.Status;
 import br.com.startjob.acesso.dataprovider.entity.ClienteEntity;
 import br.com.startjob.acesso.dataprovider.entity.PedestreEntity;
 import br.com.startjob.acesso.dataprovider.entity.PlanoEntity;
 import br.com.startjob.acesso.dataprovider.entity.UsuarioEntity;
-import br.com.startjob.acesso.core.enumeration.PerfilAcesso;
-import br.com.startjob.acesso.core.enumeration.PerfilAcessoApp;
-import br.com.startjob.acesso.core.enumeration.Status;
 import br.com.startjob.acesso.dataprovider.repository.ClienteRepository;
 import br.com.startjob.acesso.dataprovider.repository.PedestreRepository;
 import br.com.startjob.acesso.dataprovider.repository.PlanoRepository;
@@ -17,14 +17,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
-@Component
-@Profile("dev")
+//@Component
+//@Profile("dev")
 public class DevDataInitializer implements ApplicationRunner {
 
     private static final Logger log = LoggerFactory.getLogger(DevDataInitializer.class);

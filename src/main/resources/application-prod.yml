@@ -12,7 +12,7 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
-  flyway:
+  liquibase:
     enabled: true
     url: ${DB_URL}
     user: ${DB_USERNAME}

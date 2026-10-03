@@ -13,6 +13,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.TableGenerator;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,12 +21,15 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@TableGenerator(name = "planoIdGenerator", table = "TB_ID_GENERATOR",
+        pkColumnName = "GEN_NAME", valueColumnName = "GEN_VALUE", pkColumnValue = "TB_PLANO",
+        allocationSize = 50, initialValue = 0)
 @Entity
 @Table(name = "TB_PLANO")
 public class PlanoEntity extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.TABLE, generator = "planoIdGenerator")
     @Column(name = "ID_PLANO", nullable = false)
     private Long id;
 

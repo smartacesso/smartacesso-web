@@ -74,7 +74,7 @@ entrypoint/
 ## Banco de dados e portabilidade
 
 - Usar JPA/Hibernate para abstrair o dialeto SQL; evitar `@Query` nativo sempre que possível — preferir JPQL/Criteria API.
-- Estratégia de geração de ID: `GenerationType.SEQUENCE` (compatível com MySQL 8+ e SQL Server), evitar `IDENTITY`.
+- Estratégia de geração de ID: usar `GenerationType.TABLE` com `@TableGenerator` quando for necessário suportar bancos sem sequences nativas, como MySQL. Configurar `allocationSize` para reduzir o acesso à tabela geradora. Não presumir que MySQL oferece sequences nativas.
 - Não usar tipos de dados ou funções específicas do MySQL nas entidades.
 - Migrations em Liquibase (changesets), não SQL nativo direto.
 

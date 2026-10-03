@@ -8,12 +8,15 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@TableGenerator(name = "acessoIdGenerator", table = "TB_ID_GENERATOR",
+        pkColumnName = "GEN_NAME", valueColumnName = "GEN_VALUE", pkColumnValue = "TB_ACESSO",
+        allocationSize = 50, initialValue = 0)
 @Entity
 @Table(name = "TB_ACESSO")
 public class AcessoEntity extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.TABLE, generator = "acessoIdGenerator")
     @Column(name = "ID_ACESSO", nullable = false, length = 4)
     private Long id;
 

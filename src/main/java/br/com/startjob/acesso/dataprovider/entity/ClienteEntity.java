@@ -12,6 +12,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.TableGenerator;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,12 +21,15 @@ import java.util.List;
 
 @Getter
 @Setter
+@TableGenerator(name = "clienteIdGenerator", table = "TB_ID_GENERATOR",
+        pkColumnName = "GEN_NAME", valueColumnName = "GEN_VALUE", pkColumnValue = "TB_CLIENTE",
+        allocationSize = 50, initialValue = 0)
 @Entity
 @Table(name = "TB_CLIENTE")
 public class ClienteEntity extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.TABLE, generator = "clienteIdGenerator")
     @Column(name = "ID_CLIENTE", nullable = false)
     private Long id;
 

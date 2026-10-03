@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.24.xsd">
+
+    <changeSet id="001-initial-schema" author="antigravity">
+
+        <!-- Portable JPA TABLE generators: supported by MySQL, SQL Server, and other relational databases. -->
+        <createTable tableName="TB_ID_GENERATOR">
+            <column name="GEN_NAME" type="VARCHAR(100)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="GEN_VALUE" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <insert tableName="TB_ID_GENERATOR">
+            <column name="GEN_NAME" value="TB_CLIENTE"/>
+            <column name="GEN_VALUE" valueNumeric="0"/>
+        </insert>
+        <insert tableName="TB_ID_GENERATOR">
+            <column name="GEN_NAME" value="TB_PLANO"/>
+            <column name="GEN_VALUE" valueNumeric="0"/>
+        </insert>
+        <insert tableName="TB_ID_GENERATOR">
+            <column name="GEN_NAME" value="TB_USUARIO"/>
+            <column name="GEN_VALUE" valueNumeric="0"/>
+        </insert>
+        <insert tableName="TB_ID_GENERATOR">
+            <column name="GEN_NAME" value="TB_PEDESTRE"/>
+            <column name="GEN_VALUE" valueNumeric="0"/>
+        </insert>
+        <insert tableName="TB_ID_GENERATOR">
+            <column name="GEN_NAME" value="TB_PARAMETRO"/>
+            <column name="GEN_VALUE" valueNumeric="0"/>
+        </insert>
+        <insert tableName="TB_ID_GENERATOR">
+            <column name="GEN_NAME" value="TB_ACESSO"/>
+            <column name="GEN_VALUE" valueNumeric="0"/>
+        </insert>
+        <insert tableName="TB_ID_GENERATOR">
+            <column name="GEN_NAME" value="TB_ACESSO_SISTEMA"/>
+            <column name="GEN_VALUE" valueNumeric="0"/>
+        </insert>
+        <insert tableName="TB_ID_GENERATOR">
+            <column name="GEN_NAME" value="TB_WEB_PERFIL_PERMISSAO"/>
+            <column name="GEN_VALUE" valueNumeric="0"/>
+        </insert>
+
+        <!-- TB_CLIENTE -->
+        <createTable tableName="TB_CLIENTE">
+            <column name="ID_CLIENTE" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="DATA_CRIACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="DATA_ALTERACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VERSAO" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="REMOVIDO" type="CHAR(1)"/>
+            <column name="DATA_REMOVIDO" type="DATETIME"/>
+            <column name="UNIQUE_ID" type="VARCHAR(36)"/>
+            
+            <column name="NOME" type="VARCHAR(255)"/>
+            <column name="EMAIL" type="VARCHAR(100)"/>
+            <column name="CNPJ" type="VARCHAR(50)"/>
+            <column name="TELEFONE" type="VARCHAR(30)"/>
+            <column name="CELULAR" type="VARCHAR(30)"/>
+            <column name="CONTATO" type="VARCHAR(255)"/>
+            <column name="STATUS" type="VARCHAR(10)"/>
+            <column name="UNIDADE_ORGANIZACIONAL" type="VARCHAR(60)"/>
+        </createTable>
+
+        <!-- TB_PLANO -->
+        <createTable tableName="TB_PLANO">
+            <column name="ID_PLANO" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="DATA_CRIACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="DATA_ALTERACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VERSAO" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="REMOVIDO" type="CHAR(1)"/>
+            <column name="DATA_REMOVIDO" type="DATETIME"/>
+            <column name="UNIQUE_ID" type="VARCHAR(36)"/>
+            
+            <column name="NOME" type="VARCHAR(255)"/>
+            <column name="STATUS" type="VARCHAR(10)"/>
+            <column name="DATA_INICIO" type="DATETIME"/>
+            <column name="DATA_FIM" type="DATETIME"/>
+            <column name="PERIODICIDADE" type="VARCHAR(255)"/>
+            <column name="DIA_VENCIMENTO" type="BIGINT"/>
+            <column name="VALOR" type="DOUBLE"/>
+            <column name="ID_CLIENTE" type="BIGINT"/>
+        </createTable>
+
+        <!-- TB_USUARIO -->
+        <createTable tableName="TB_USUARIO">
+            <column name="ID_USUARIO" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="DATA_CRIACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="DATA_ALTERACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VERSAO" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="REMOVIDO" type="CHAR(1)"/>
+            <column name="DATA_REMOVIDO" type="DATETIME"/>
+            <column name="UNIQUE_ID" type="VARCHAR(36)"/>
+            
+            <column name="NOME" type="VARCHAR(255)"/>
+            <column name="STATUS" type="VARCHAR(100)"/>
+            <column name="LOGIN" type="VARCHAR(100)"/>
+            <column name="SENHA" type="VARCHAR(255)"/>
+            <column name="EMAIL" type="VARCHAR(100)"/>
+            <column name="CPF" type="VARCHAR(20)"/>
+            <column name="RG" type="VARCHAR(20)"/>
+            <column name="TELEFONE" type="VARCHAR(20)"/>
+            <column name="CELULAR" type="VARCHAR(20)"/>
+            <column name="DATA_NASCIMENTO" type="DATETIME"/>
+            <column name="PERFIL" type="VARCHAR(20)"/>
+            <column name="TOKEN" type="VARCHAR(100)"/>
+            <column name="ACESSA_WEB" type="BOOLEAN"/>
+            <column name="CADASTRO_SIMPLES" type="BOOLEAN"/>
+            <column name="USUARIO_MASTER" type="BOOLEAN"/>
+            <column name="HABILITA_EXPEDIDORA" type="BOOLEAN"/>
+            <column name="ID_CLIENTE" type="BIGINT"/>
+        </createTable>
+
+        <!-- TB_PEDESTRE -->
+        <createTable tableName="TB_PEDESTRE">
+            <column name="ID_PEDESTRE" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="DATA_CRIACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="DATA_ALTERACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VERSAO" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="REMOVIDO" type="CHAR(1)"/>
+            <column name="DATA_REMOVIDO" type="DATETIME"/>
+            <column name="UNIQUE_ID" type="VARCHAR(36)"/>
+            
+            <column name="NOME" type="VARCHAR(255)"/>
+            <column name="STATUS" type="VARCHAR(100)"/>
+            <column name="LOGIN" type="VARCHAR(100)"/>
+            <column name="SENHA" type="VARCHAR(255)"/>
+            <column name="PERFIL_APP" type="VARCHAR(255)"/>
+            <column name="ID_CLIENTE" type="BIGINT"/>
+        </createTable>
+
+        <!-- TB_PARAMETRO -->
+        <createTable tableName="TB_PARAMETRO">
+            <column name="ID_PARAMETRO" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="DATA_CRIACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="DATA_ALTERACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VERSAO" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="REMOVIDO" type="CHAR(1)"/>
+            <column name="DATA_REMOVIDO" type="DATETIME"/>
+            <column name="UNIQUE_ID" type="VARCHAR(36)"/>
+            
+            <column name="NOME" type="VARCHAR(255)"/>
+            <column name="VALOR" type="VARCHAR(255)"/>
+            <column name="ID_CLIENTE" type="BIGINT"/>
+        </createTable>
+
+        <!-- TB_ACESSO -->
+        <createTable tableName="TB_ACESSO">
+            <column name="ID_ACESSO" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="DATA_CRIACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="DATA_ALTERACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VERSAO" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="REMOVIDO" type="CHAR(1)"/>
+            <column name="DATA_REMOVIDO" type="DATETIME"/>
+            <column name="UNIQUE_ID" type="VARCHAR(36)"/>
+            
+            <column name="ID_PEDESTRE" type="BIGINT"/>
+            <column name="DATA" type="DATETIME"/>
+            <column name="SENTIDO" type="VARCHAR(100)"/>
+            <column name="EQUIPAMENTO" type="VARCHAR(100)"/>
+            <column name="TIPO" type="VARCHAR(100)"/>
+            <column name="LOCAL" type="VARCHAR(100)"/>
+            <column name="RAZAO" type="VARCHAR(100)"/>
+            <column name="CARTAO_ACESSO_RECEBIDO" type="VARCHAR(100)"/>
+            <column name="IS_SINCRONIZADO" type="BOOLEAN"/>
+        </createTable>
+
+        <!-- TB_ACESSO_SISTEMA -->
+        <createTable tableName="TB_ACESSO_SISTEMA">
+            <column name="ID_ACESSO_SISTEMA" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="DATA_CRIACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="DATA_ALTERACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VERSAO" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="REMOVIDO" type="CHAR(1)"/>
+            <column name="DATA_REMOVIDO" type="DATETIME"/>
+            <column name="UNIQUE_ID" type="VARCHAR(36)"/>
+            
+            <column name="ID_USUARIO" type="BIGINT"/>
+            <column name="ID_PEDESTRE" type="BIGINT"/>
+            <column name="DATA" type="DATETIME"/>
+            <column name="DISPOSITICO" type="VARCHAR(255)"/>
+            <column name="TIPO" type="VARCHAR(100)"/>
+        </createTable>
+
+        <!-- TB_WEB_PERFIL_PERMISSAO -->
+        <createTable tableName="TB_WEB_PERFIL_PERMISSAO">
+            <column name="ID_WEB_PERFIL_PERMISSAO" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="DATA_CRIACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="DATA_ALTERACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VERSAO" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="REMOVIDO" type="CHAR(1)"/>
+            <column name="DATA_REMOVIDO" type="DATETIME"/>
+            <column name="UNIQUE_ID" type="VARCHAR(36)"/>
+            
+            <column name="PERFIL" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CODIGO_PERMISSAO" type="VARCHAR(80)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="HABILITADO" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ID_CLIENTE" type="BIGINT"/>
+        </createTable>
+
+        <!-- Foreign Keys -->
+        <addForeignKeyConstraint baseTableName="TB_PLANO" baseColumnNames="ID_CLIENTE" constraintName="FK_PLANO_CLIENTE" referencedTableName="TB_CLIENTE" referencedColumnNames="ID_CLIENTE"/>
+        <addForeignKeyConstraint baseTableName="TB_USUARIO" baseColumnNames="ID_CLIENTE" constraintName="FK_USUARIO_CLIENTE" referencedTableName="TB_CLIENTE" referencedColumnNames="ID_CLIENTE"/>
+        <addForeignKeyConstraint baseTableName="TB_PEDESTRE" baseColumnNames="ID_CLIENTE" constraintName="FK_PEDESTRE_CLIENTE" referencedTableName="TB_CLIENTE" referencedColumnNames="ID_CLIENTE"/>
+        <addForeignKeyConstraint baseTableName="TB_PARAMETRO" baseColumnNames="ID_CLIENTE" constraintName="FK_PARAMETRO_CLIENTE" referencedTableName="TB_CLIENTE" referencedColumnNames="ID_CLIENTE"/>
+        <addForeignKeyConstraint baseTableName="TB_ACESSO" baseColumnNames="ID_PEDESTRE" constraintName="FK_ACESSO_PEDESTRE" referencedTableName="TB_PEDESTRE" referencedColumnNames="ID_PEDESTRE"/>
+        <addForeignKeyConstraint baseTableName="TB_ACESSO_SISTEMA" baseColumnNames="ID_USUARIO" constraintName="FK_ACESSOSYS_USUARIO" referencedTableName="TB_USUARIO" referencedColumnNames="ID_USUARIO"/>
+        <addForeignKeyConstraint baseTableName="TB_ACESSO_SISTEMA" baseColumnNames="ID_PEDESTRE" constraintName="FK_ACESSOSYS_PEDESTRE" referencedTableName="TB_PEDESTRE" referencedColumnNames="ID_PEDESTRE"/>
+        <addForeignKeyConstraint baseTableName="TB_WEB_PERFIL_PERMISSAO" baseColumnNames="ID_CLIENTE" constraintName="FK_WEBPERFIL_CLIENTE" referencedTableName="TB_CLIENTE" referencedColumnNames="ID_CLIENTE"/>
+
+        <!-- Unique Constraints -->
+        <addUniqueConstraint tableName="TB_WEB_PERFIL_PERMISSAO" columnNames="ID_CLIENTE, PERFIL, CODIGO_PERMISSAO" constraintName="UK_WEB_PERFIL_PERMISSAO"/>
+
+    </changeSet>
+
+</databaseChangeLog>

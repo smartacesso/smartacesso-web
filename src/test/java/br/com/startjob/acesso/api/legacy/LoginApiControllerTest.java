@@ -1,10 +1,10 @@
 package br.com.startjob.acesso.api.legacy;
 
+import br.com.startjob.acesso.core.enumeration.PerfilAcesso;
+import br.com.startjob.acesso.core.enumeration.Status;
 import br.com.startjob.acesso.dataprovider.entity.ClienteEntity;
 import br.com.startjob.acesso.dataprovider.entity.PlanoEntity;
 import br.com.startjob.acesso.dataprovider.entity.UsuarioEntity;
-import br.com.startjob.acesso.core.enumeration.PerfilAcesso;
-import br.com.startjob.acesso.core.enumeration.Status;
 import br.com.startjob.acesso.dataprovider.repository.ClienteRepository;
 import br.com.startjob.acesso.dataprovider.repository.PlanoRepository;
 import br.com.startjob.acesso.dataprovider.repository.UsuarioRepository;
@@ -12,8 +12,8 @@ import br.com.startjob.acesso.entrypoint.api.security.password.PasswordHasher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,9 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc

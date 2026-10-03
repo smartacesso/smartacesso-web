@@ -1,7 +1,7 @@
 package br.com.startjob.acesso.entrypoint.api.security;
 
 import br.com.startjob.acesso.entrypoint.api.dto.ApiErrorResponse;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.MediaType;
@@ -21,11 +21,13 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
     }
 
     @Override
-    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
+    public void commence(HttpServletRequest request, HttpServletResponse response,
+            AuthenticationException authException)
             throws IOException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         objectMapper.writeValue(response.getOutputStream(),
-                ApiErrorResponse.of(401, "Unauthorized", "UNAUTHORIZED", "Autenticação necessária", request.getRequestURI()));
+                ApiErrorResponse.of(401, "Unauthorized", "UNAUTHORIZED", "Autenticação necessária",
+                        request.getRequestURI()));
     }
 }

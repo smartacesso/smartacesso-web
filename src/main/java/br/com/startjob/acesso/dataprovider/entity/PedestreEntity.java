@@ -14,6 +14,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.TableGenerator;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -21,12 +22,15 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
+@TableGenerator(name = "pedestreIdGenerator", table = "TB_ID_GENERATOR",
+        pkColumnName = "GEN_NAME", valueColumnName = "GEN_VALUE", pkColumnValue = "TB_PEDESTRE",
+        allocationSize = 50, initialValue = 0)
 @Entity
 @Table(name = "TB_PEDESTRE")
 public class PedestreEntity extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.TABLE, generator = "pedestreIdGenerator")
     @Column(name = "ID_PEDESTRE", nullable = false)
     private Long id;
 

@@ -1,9 +1,9 @@
 package br.com.startjob.acesso.api.app;
 
-import br.com.startjob.acesso.dataprovider.entity.ClienteEntity;
-import br.com.startjob.acesso.dataprovider.entity.PedestreEntity;
 import br.com.startjob.acesso.core.enumeration.PerfilAcessoApp;
 import br.com.startjob.acesso.core.enumeration.Status;
+import br.com.startjob.acesso.dataprovider.entity.ClienteEntity;
+import br.com.startjob.acesso.dataprovider.entity.PedestreEntity;
 import br.com.startjob.acesso.dataprovider.repository.ClienteRepository;
 import br.com.startjob.acesso.dataprovider.repository.PedestreRepository;
 import br.com.startjob.acesso.entrypoint.api.dto.AppLoginRequest;
@@ -12,8 +12,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;

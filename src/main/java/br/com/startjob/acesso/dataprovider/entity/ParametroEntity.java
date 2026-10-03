@@ -9,17 +9,21 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.TableGenerator;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@TableGenerator(name = "parametroIdGenerator", table = "TB_ID_GENERATOR",
+        pkColumnName = "GEN_NAME", valueColumnName = "GEN_VALUE", pkColumnValue = "TB_PARAMETRO",
+        allocationSize = 50, initialValue = 0)
 @Entity
 @Table(name = "TB_PARAMETRO")
 public class ParametroEntity extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.TABLE, generator = "parametroIdGenerator")
     @Column(name = "ID_PARAMETRO", nullable = false)
     private Long id;
 

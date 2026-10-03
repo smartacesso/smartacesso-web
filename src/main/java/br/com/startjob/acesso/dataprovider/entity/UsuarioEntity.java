@@ -11,12 +11,15 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@TableGenerator(name = "usuarioIdGenerator", table = "TB_ID_GENERATOR",
+        pkColumnName = "GEN_NAME", valueColumnName = "GEN_VALUE", pkColumnValue = "TB_USUARIO",
+        allocationSize = 50, initialValue = 0)
 @Entity
 @Table(name = "TB_USUARIO")
 public class UsuarioEntity extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.TABLE, generator = "usuarioIdGenerator")
     @Column(name = "ID_USUARIO", nullable = false)
     private Long id;
 

@@ -14,14 +14,11 @@ spring:
       hibernate:
         jdbc:
           time_zone: UTC
-        dialect: org.hibernate.dialect.MySQLDialect
   jackson:
-    serialization:
-      write-dates-as-timestamps: false
-      write-dates-with-zone-id: false
     default-property-inclusion: always
-  flyway:
+  liquibase:
     enabled: false
+    change-log: classpath:db/changelog/db.changelog-master.xml
 
 server:
   servlet:

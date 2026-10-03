@@ -15,17 +15,16 @@ Ainda **não** migrados: sync de pedestres, fotos, biometria, JSF/PrimeFaces, We
 
 ## Como rodar
 
-Requisito: JDK 21 e Maven 3.9+ (ou o wrapper `./mvnw`).
+Requisito: JDK 25 e Maven 3.9+ (ou o wrapper `./mvnw`). O perfil `dev` conecta ao MySQL local; inicie o serviço antes da aplicação.
 
 ```bash
-# perfil dev usa H2 em memória e cria usuário admin/123456 na unidade "desenvolvimento"
+# perfil dev usa MySQL e cria usuário admin/123456 na unidade "desenvolvimento"
 ./mvnw spring-boot:run
 ```
 
 - API base: http://localhost:8080/sistema
 - Swagger: http://localhost:8080/sistema/swagger-ui.html
 - Health: http://localhost:8080/sistema/actuator/health
-- H2 console (dev): http://localhost:8080/sistema/h2-console
 
 Login desktop de exemplo:
 
@@ -37,9 +36,9 @@ GET /sistema/restful-services/login/do?unidadeName=desenvolvimento&loginName=adm
 
 | Perfil | Banco | DDL | Observação |
 |--------|--------|-----|------------|
-| `dev` (padrão) | H2 em memória | `update` | Bootstrap de dados de teste |
-| `test` | H2 | `create-drop` | Usado pelos testes |
-| `prod` | MySQL | `none` + Flyway | Exige `JWT_SECRET` e `DB_*` |
+| `dev` (padrão) | MySQL local | `none` + Liquibase | Bootstrap de dados de desenvolvimento |
+| `test` | H2 | `create-drop` | Liquibase desabilitado; usado pelos testes |
+| `prod` | MySQL | `validate` + Liquibase | Exige `JWT_SECRET` e `DB_*` |
 
 Copie `.env.example` para `.env` e preencha os secrets. Nunca commite `.env`.
 
