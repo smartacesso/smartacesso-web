@@ -33,6 +33,6 @@ smartacesso:
 
 logging:
   level:
-    liquibase: INFO
+    #liquibase: INFO
     br.com.startjob.acesso: INFO
     org.springframework.security: INFO

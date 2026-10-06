@@ -6,6 +6,8 @@ import br.com.startjob.acesso.dataprovider.mapper.ClienteMapper;
 import br.com.startjob.acesso.dataprovider.mapper.CycleAvoidingMappingContext;
 import br.com.startjob.acesso.dataprovider.repository.ClienteRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -25,7 +27,13 @@ public class ClienteGatewayImpl implements ClienteGateway {
     @Override
     public Optional<Cliente> findByUnidadeAtiva(String unidade) {
         return clienteRepository.findByUnidadeAtiva(unidade)
-                .map(entity -> clienteMapper.toDomain(entity, new CycleAvoidingMappingContext()));
+                .map(entity -> clienteMapper.toDomainComPlanos(entity, new CycleAvoidingMappingContext()));
+    }
+
+    @Override
+    public Page<Cliente> buscarClientes(String nome, Pageable pageable) {
+        return clienteRepository.buscarClientes(nome, pageable)
+                .map(entity -> clienteMapper.toDomainResumo(entity, new CycleAvoidingMappingContext()));
     }
 
 }
