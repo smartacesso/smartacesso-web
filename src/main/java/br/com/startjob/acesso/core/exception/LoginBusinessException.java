@@ -1,5 +1,8 @@
 package br.com.startjob.acesso.core.exception;
 
+import lombok.Getter;
+
+@Getter
 public class LoginBusinessException extends BusinessException {
 
     private final String messageKey;
@@ -9,7 +12,4 @@ public class LoginBusinessException extends BusinessException {
         this.messageKey = messageKey;
     }
 
-    public String getMessageKey() {
-        return messageKey;
-    }
 }

@@ -36,7 +36,8 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
                 || path.contains("/restful-services/login/interno")
                 || path.contains("/restful-services/app/login")
                 || path.contains("/restful-services/pedestre/login")
-                || path.contains("/restful-services/responsible/login"));
+                || path.contains("/restful-services/responsible/login")
+                || path.contains("/api/login"));
     }
 
     @Override

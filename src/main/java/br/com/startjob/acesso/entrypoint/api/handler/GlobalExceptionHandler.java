@@ -1,5 +1,6 @@
 package br.com.startjob.acesso.entrypoint.api.handler;
 
+import br.com.startjob.acesso.core.exception.LoginBusinessException;
 import br.com.startjob.acesso.entrypoint.api.dto.ApiErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -40,6 +41,12 @@ public class GlobalExceptionHandler {
         log.warn("illegal_state path={}", request.getRequestURI());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                 ApiErrorResponse.of(500, "Internal Server Error", "INTERNAL_ERROR", "Erro interno", request.getRequestURI()));
+    }
+
+    @ExceptionHandler(LoginBusinessException.class)
+    public ResponseEntity<ApiErrorResponse> loginBusiness(LoginBusinessException ex, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                ApiErrorResponse.of(401, "Unauthorized", "LOGIN_ERROR", ex.getMessageKey(), request.getRequestURI()));
     }
 
     @ExceptionHandler(Exception.class)

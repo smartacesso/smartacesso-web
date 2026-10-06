@@ -52,6 +52,7 @@ public class SecurityConfig {
                                 "/restful-services/access/action",
                                 "/restful-services/app/login",
                                 "/restful-services/app/health",
+                                "/api/login",
                                 "/actuator/health",
                                 "/actuator/health/**",
                                 "/actuator/info",
