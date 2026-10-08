@@ -120,7 +120,7 @@ public class LoginApiController {
         dto.setQtdePadraoDigitosCartao(extras.qtdePadraoDigitosCartao());
         dto.setChaveIntegracaoComtele(extras.chaveIntegracaoComtele());
         dto.setPermissoes(extras.permissoes());
-        if (includePasswordHash && properties.security().includePasswordHashInDesktopLogin()) {
+        if (includePasswordHash && properties.getSecurity().isIncludePasswordHashInDesktopLogin()) {
             dto.setSenha(usuario.getSenha());
         }
 

@@ -27,7 +27,7 @@ public class JwtService {
 
     public String generate(Long userId, String cliente, String perfil) {
         Instant now = Instant.now();
-        Instant exp = now.plus(properties.security().jwt().expiration());
+        Instant exp = now.plus(properties.getSecurity().getJwt().getExpiration());
         return Jwts.builder()
                 .subject(String.valueOf(userId))
                 .claim("cliente", cliente)
@@ -63,9 +63,9 @@ public class JwtService {
     }
 
     private String secret() {
-        if (properties.security() == null || properties.security().jwt() == null) {
+        if (properties.getSecurity() == null || properties.getSecurity().getJwt() == null) {
             return null;
         }
-        return properties.security().jwt().secret();
+        return properties.getSecurity().getJwt().getSecret();
     }
 }

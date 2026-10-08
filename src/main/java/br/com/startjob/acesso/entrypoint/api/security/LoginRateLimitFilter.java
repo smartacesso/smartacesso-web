@@ -24,8 +24,8 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
     private final long windowMillis;
 
     public LoginRateLimitFilter(SmartAcessoProperties properties) {
-        this.capacity = properties.security().loginRateLimit().capacity();
-        Duration window = properties.security().loginRateLimit().window();
+        this.capacity = properties.getSecurity().getLoginRateLimit().getCapacity();
+        Duration window = properties.getSecurity().getLoginRateLimit().getWindow();
         this.windowMillis = window != null ? window.toMillis() : 60_000L;
     }
 

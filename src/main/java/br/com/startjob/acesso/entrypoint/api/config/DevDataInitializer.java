@@ -41,10 +41,10 @@ public class DevDataInitializer implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
-        if (properties.bootstrap() == null || !properties.bootstrap().enabled()) {
+        if (properties.getBootstrap() == null || !properties.getBootstrap().isEnabled()) {
             return;
         }
-        String unidade = properties.bootstrap().unidade();
+        String unidade = properties.getBootstrap().getUnidade();
         if (clienteRepository.findByUnidadeAtiva(unidade).isPresent()) {
             return;
         }
@@ -64,9 +64,9 @@ public class DevDataInitializer implements ApplicationRunner {
         planoRepository.save(plano);
 
         UsuarioEntity admin = new UsuarioEntity();
-        admin.setNome(properties.bootstrap().adminNome());
-        admin.setLogin(properties.bootstrap().adminLogin());
-        admin.setSenha(passwordHasher.sha256Hex(properties.bootstrap().adminPassword()));
+        admin.setNome(properties.getBootstrap().getAdminNome());
+        admin.setLogin(properties.getBootstrap().getAdminLogin());
+        admin.setSenha(passwordHasher.sha256Hex(properties.getBootstrap().getAdminPassword()));
         admin.setStatus(Status.ATIVO);
         admin.setPerfil(PerfilAcesso.ADMINISTRADOR);
         admin.setAcessaWeb(true);
@@ -74,15 +74,15 @@ public class DevDataInitializer implements ApplicationRunner {
         usuarioRepository.save(admin);
 
         PedestreEntity pedestre = new PedestreEntity();
-        pedestre.setNome(properties.bootstrap().appNome());
-        pedestre.setLogin(properties.bootstrap().appLogin());
-        pedestre.setSenha(passwordHasher.sha256Hex(properties.bootstrap().appPassword()));
+        pedestre.setNome(properties.getBootstrap().getAppNome());
+        pedestre.setLogin(properties.getBootstrap().getAppLogin());
+        pedestre.setSenha(passwordHasher.sha256Hex(properties.getBootstrap().getAppPassword()));
         pedestre.setStatus(Status.ATIVO);
         pedestre.setPerfilApp(PerfilAcessoApp.GERENCIAL);
         pedestre.setCliente(cliente);
         pedestreRepository.save(pedestre);
 
         log.info("Bootstrap dev: unidade='{}' admin='{}' app='{}'", unidade,
-                properties.bootstrap().adminLogin(), properties.bootstrap().appLogin());
+                properties.getBootstrap().getAdminLogin(), properties.getBootstrap().getAppLogin());
     }
 }

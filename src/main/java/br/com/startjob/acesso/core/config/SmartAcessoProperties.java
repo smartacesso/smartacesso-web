@@ -1,26 +1,41 @@
 package br.com.startjob.acesso.core.config;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.time.Duration;
 
+@Getter
+@Setter
 @ConfigurationProperties(prefix = "smartacesso")
-public record SmartAcessoProperties(
-        Security security,
-        Audit audit,
-        Bootstrap bootstrap
-) {
-    public record Security(
-            Jwt jwt,
-            RateLimit loginRateLimit,
-            DesktopApiMode desktopApiMode,
-            boolean passwordUpgradeOnLogin,
-            boolean includePasswordHashInDesktopLogin
-    ) {
-        public record Jwt(String secret, Duration expiration) {
+public class SmartAcessoProperties {
+
+    private Security security = new Security();
+    private Audit audit = new Audit();
+    private Bootstrap bootstrap = new Bootstrap();
+
+    @Getter
+    @Setter
+    public static class Security {
+        private Jwt jwt = new Jwt();
+        private RateLimit loginRateLimit = new RateLimit();
+        private DesktopApiMode desktopApiMode = DesktopApiMode.COMPAT;
+        private boolean passwordUpgradeOnLogin;
+        private boolean includePasswordHashInDesktopLogin;
+
+        @Getter
+        @Setter
+        public static class Jwt {
+            private String secret;
+            private Duration expiration;
         }
 
-        public record RateLimit(int capacity, Duration window) {
+        @Getter
+        @Setter
+        public static class RateLimit {
+            private int capacity;
+            private Duration window;
         }
     }
 
@@ -29,18 +44,22 @@ public record SmartAcessoProperties(
         REQUIRED
     }
 
-    public record Audit(boolean loginEvents) {
+    @Getter
+    @Setter
+    public static class Audit {
+        private boolean loginEvents;
     }
 
-    public record Bootstrap(
-            boolean enabled,
-            String unidade,
-            String adminLogin,
-            String adminPassword,
-            String adminNome,
-            String appLogin,
-            String appPassword,
-            String appNome
-    ) {
+    @Getter
+    @Setter
+    public static class Bootstrap {
+        private boolean enabled;
+        private String unidade;
+        private String adminLogin;
+        private String adminPassword;
+        private String adminNome;
+        private String appLogin;
+        private String appPassword;
+        private String appNome;
     }
 }

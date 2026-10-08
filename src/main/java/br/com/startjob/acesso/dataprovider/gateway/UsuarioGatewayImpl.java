@@ -6,9 +6,12 @@ import br.com.startjob.acesso.dataprovider.mapper.CycleAvoidingMappingContext;
 import br.com.startjob.acesso.dataprovider.mapper.UsuarioMapper;
 import br.com.startjob.acesso.dataprovider.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -17,6 +20,21 @@ public class UsuarioGatewayImpl implements UsuarioGateway {
 
     private final UsuarioRepository usuarioRepository;
     private final UsuarioMapper usuarioMapper;
+
+    @Override
+    public Optional<Usuario> findLoggedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()
+                || !(authentication.getPrincipal() instanceof String userId)) {
+            return Optional.empty();
+        }
+        try {
+            return usuarioRepository.findById(Long.valueOf(userId))
+                    .map(entity -> usuarioMapper.toDomain(entity, new CycleAvoidingMappingContext()));
+        } catch (NumberFormatException e) {
+            return Optional.empty();
+        }
+    }
 
     @Override
     public List<Usuario> findByLoginAndUnidade(String login, String unidade) {
