@@ -14,6 +14,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 @RequiredArgsConstructor
 @Component
 public class UsuarioGatewayImpl implements UsuarioGateway {
@@ -29,7 +32,7 @@ public class UsuarioGatewayImpl implements UsuarioGateway {
             return Optional.empty();
         }
         try {
-            return usuarioRepository.findById(Long.valueOf(userId))
+            return usuarioRepository.findByIdWithCliente(Long.valueOf(userId))
                     .map(entity -> usuarioMapper.toDomain(entity, new CycleAvoidingMappingContext()));
         } catch (NumberFormatException e) {
             return Optional.empty();
@@ -43,4 +46,9 @@ public class UsuarioGatewayImpl implements UsuarioGateway {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public Page<Usuario> buscarUsuarios(Long idCliente, String nome, String cpf, Pageable pageable) {
+        return usuarioRepository.buscarUsuarios(idCliente, nome, cpf, pageable)
+                .map(entity -> usuarioMapper.toDomain(entity, new CycleAvoidingMappingContext()));
+    }
 }
