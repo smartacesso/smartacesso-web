@@ -10,9 +10,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import jakarta.validation.Valid;
+import br.com.startjob.acesso.core.usecase.usuario.SalvarUsuarioUseCase;
+import br.com.startjob.acesso.entrypoint.api.dto.WebSalvarUsuarioRequest;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -22,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class UsuarioController {
 
     private final ConsultaUsuarioUseCase consultaUsuarioUseCase;
+    private final SalvarUsuarioUseCase salvarUsuarioUseCase;
 
     @Operation(summary = "Lista usuários paginados com filtro opcional por nome e cpf")
     @GetMapping
@@ -37,5 +43,17 @@ public class UsuarioController {
                         .map(UsuarioResponse::fromDomain));
 
         return ResponseEntity.ok(page);
+    }
+
+    @Operation(summary = "Cria ou edita um usuário")
+    @PostMapping
+    public ResponseEntity<UsuarioResponse> salvarUsuario(
+            @Valid @RequestBody WebSalvarUsuarioRequest request) {
+
+        log.info("Salvando usuário - id: {}, login: {}", request.getId(), request.getLogin());
+
+        var usuarioSalvo = salvarUsuarioUseCase.execute(request.toDomain(), request.getConfirmarSenha());
+
+        return ResponseEntity.ok(UsuarioResponse.fromDomain(usuarioSalvo));
     }
 }

@@ -51,4 +51,27 @@ public class UsuarioGatewayImpl implements UsuarioGateway {
         return usuarioRepository.buscarUsuarios(idCliente, nome, cpf, pageable)
                 .map(entity -> usuarioMapper.toDomain(entity, new CycleAvoidingMappingContext()));
     }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        return usuarioRepository.existsByEmail(email);
+    }
+
+    @Override
+    public boolean existsByLoginAndCliente(String login, Long idCliente) {
+        return usuarioRepository.existsByLoginAndCliente(login, idCliente);
+    }
+
+    @Override
+    public Usuario save(Usuario usuario) {
+        var entity = usuarioMapper.toEntity(usuario, new CycleAvoidingMappingContext());
+        var savedEntity = usuarioRepository.save(entity);
+        return usuarioMapper.toDomain(savedEntity, new CycleAvoidingMappingContext());
+    }
+
+    @Override
+    public Optional<Usuario> findById(Long id) {
+        return usuarioRepository.findByIdWithCliente(id)
+                .map(entity -> usuarioMapper.toDomain(entity, new CycleAvoidingMappingContext()));
+    }
 }

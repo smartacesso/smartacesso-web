@@ -15,4 +15,12 @@ public interface UsuarioGateway {
 
     Page<Usuario> buscarUsuarios(Long idCliente, String nome, String cpf, Pageable pageable);
 
+    boolean existsByEmail(String email);
+
+    boolean existsByLoginAndCliente(String login, Long idCliente);
+
+    Usuario save(Usuario usuario);
+
+    Optional<Usuario> findById(Long id);
+
 }

@@ -40,4 +40,10 @@ public interface UsuarioRepository extends JpaRepository<UsuarioEntity, Long> {
             @Param("cpf") String cpf,
             Pageable pageable
     );
+
+    @Query("select count(u) > 0 from UsuarioEntity u where u.email = :email and (u.removido = false or u.removido is null)")
+    boolean existsByEmail(@Param("email") String email);
+
+    @Query("select count(u) > 0 from UsuarioEntity u where u.login = :login and u.cliente.id = :idCliente and (u.removido = false or u.removido is null)")
+    boolean existsByLoginAndCliente(@Param("login") String login, @Param("idCliente") Long idCliente);
 }

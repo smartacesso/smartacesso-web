@@ -3,7 +3,9 @@ package br.com.startjob.acesso.entrypoint.api.dto;
 import br.com.startjob.acesso.core.domain.usuario.Usuario;
 import br.com.startjob.acesso.core.enumeration.PerfilAcesso;
 import br.com.startjob.acesso.core.enumeration.Status;
+import lombok.Builder;
 
+@Builder
 public record UsuarioResponse(
         Long id,
         String nome,
@@ -25,21 +27,21 @@ public record UsuarioResponse(
             return null;
         }
 
-        return new UsuarioResponse(
-                domain.getId(),
-                domain.getNome(),
-                domain.getLogin(),
-                domain.getEmail(),
-                domain.getCpf(),
-                domain.getRg(),
-                domain.getTelefone(),
-                domain.getCelular(),
-                domain.getStatus(),
-                domain.getPerfil(),
-                domain.getAcessaWeb(),
-                domain.getCadastroSimples(),
-                domain.getUsuarioMaster(),
-                domain.getExpedidora()
-        );
+        return UsuarioResponse.builder()
+                .id(domain.getId())
+                .nome(domain.getNome())
+                .login(domain.getLogin())
+                .email(domain.getEmail())
+                .cpf(domain.getCpf())
+                .rg(domain.getRg())
+                .telefone(domain.getTelefone())
+                .celular(domain.getCelular())
+                .status(domain.getStatus())
+                .perfil(domain.getPerfil())
+                .acessaWeb(domain.getAcessaWeb())
+                .cadastroSimples(domain.getCadastroSimples())
+                .usuarioMaster(domain.getUsuarioMaster())
+                .expedidora(domain.getExpedidora())
+                .build();
     }
 }
