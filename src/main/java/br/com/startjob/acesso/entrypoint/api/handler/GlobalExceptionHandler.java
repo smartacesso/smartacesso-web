@@ -1,5 +1,6 @@
 package br.com.startjob.acesso.entrypoint.api.handler;
 
+import br.com.startjob.acesso.core.exception.BusinessException;
 import br.com.startjob.acesso.core.exception.LoginBusinessException;
 import br.com.startjob.acesso.entrypoint.api.dto.ApiErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -47,6 +48,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiErrorResponse> loginBusiness(LoginBusinessException ex, HttpServletRequest request) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                 ApiErrorResponse.of(401, "Unauthorized", "LOGIN_ERROR", ex.getMessageKey(), request.getRequestURI()));
+    }
+
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<ApiErrorResponse> business(BusinessException ex, HttpServletRequest request) {
+        log.warn("business_error path={} message={}", request.getRequestURI(), ex.getMessage());
+        return ResponseEntity.badRequest().body(
+                ApiErrorResponse.of(400, "Bad Request", "BUSINESS_ERROR", ex.getMessage(), request.getRequestURI()));
     }
 
     @ExceptionHandler(Exception.class)

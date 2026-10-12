@@ -16,7 +16,7 @@ public interface PedestreRepository extends JpaRepository<PedestreEntity, Long> 
     @Query("""
             select p from PedestreEntity p
             join p.cliente c
-            where p.removido is null
+            where (p.removido = false or p.removido is null)
               and c.nomeUnidadeOrganizacional = :unidade
               and p.login = :login
             """)

@@ -1,23 +1,19 @@
 package br.com.startjob.acesso.entrypoint.api.controller;
 
 import br.com.startjob.acesso.core.usecase.usuario.ConsultaUsuarioUseCase;
+import br.com.startjob.acesso.core.usecase.usuario.ExcluirUsuarioUseCase;
+import br.com.startjob.acesso.core.usecase.usuario.SalvarUsuarioUseCase;
 import br.com.startjob.acesso.entrypoint.api.dto.PageResponse;
 import br.com.startjob.acesso.entrypoint.api.dto.UsuarioResponse;
+import br.com.startjob.acesso.entrypoint.api.dto.WebSalvarUsuarioRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import jakarta.validation.Valid;
-import br.com.startjob.acesso.core.usecase.usuario.SalvarUsuarioUseCase;
-import br.com.startjob.acesso.entrypoint.api.dto.WebSalvarUsuarioRequest;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -28,6 +24,7 @@ public class UsuarioController {
 
     private final ConsultaUsuarioUseCase consultaUsuarioUseCase;
     private final SalvarUsuarioUseCase salvarUsuarioUseCase;
+    private final ExcluirUsuarioUseCase excluirUsuarioUseCase;
 
     @Operation(summary = "Lista usuários paginados com filtro opcional por nome e cpf")
     @GetMapping
@@ -55,5 +52,15 @@ public class UsuarioController {
         var usuarioSalvo = salvarUsuarioUseCase.execute(request.toDomain(), request.getConfirmarSenha());
 
         return ResponseEntity.ok(UsuarioResponse.fromDomain(usuarioSalvo));
+    }
+
+    @Operation(summary = "Exclui um usuário")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> excluirUsuario(@PathVariable Long id) {
+        log.info("Excluindo usuário - id: {}", id);
+
+        excluirUsuarioUseCase.execute(id);
+
+        return ResponseEntity.noContent().build();
     }
 }
