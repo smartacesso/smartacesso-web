@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    logicalFilePath="db/changelog/changesets/002-empresa-departamento-centro-cargo-schema.xml"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.24.xsd">
+
+    <changeSet id="002-empresa-departamento-centro-cargo-schema" author="antigravity">
+
+        <!-- ID Generators -->
+        <insert tableName="TB_ID_GENERATOR">
+            <column name="GEN_NAME" value="TB_EMPRESA"/>
+            <column name="GEN_VALUE" valueNumeric="0"/>
+        </insert>
+        <insert tableName="TB_ID_GENERATOR">
+            <column name="GEN_NAME" value="TB_DEPARTAMENTO"/>
+            <column name="GEN_VALUE" valueNumeric="0"/>
+        </insert>
+        <insert tableName="TB_ID_GENERATOR">
+            <column name="GEN_NAME" value="TB_CENTRO_CUSTO"/>
+            <column name="GEN_VALUE" valueNumeric="0"/>
+        </insert>
+        <insert tableName="TB_ID_GENERATOR">
+            <column name="GEN_NAME" value="TB_CARGO"/>
+            <column name="GEN_VALUE" valueNumeric="0"/>
+        </insert>
+
+        <!-- TB_EMPRESA -->
+        <createTable tableName="TB_EMPRESA">
+            <column name="ID_EMPRESA" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="DATA_CRIACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="DATA_ALTERACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VERSAO" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="REMOVIDO" type="CHAR(1)"/>
+            <column name="DATA_REMOVIDO" type="DATETIME"/>
+            <column name="UNIQUE_ID" type="VARCHAR(36)"/>
+
+            <column name="NOME" type="VARCHAR(255)"/>
+            <column name="CNPJ" type="VARCHAR(50)"/>
+            <column name="EMAIL" type="VARCHAR(100)"/>
+            <column name="TELEFONE" type="VARCHAR(20)"/>
+            <column name="CELULAR" type="VARCHAR(20)"/>
+            <column name="STATUS" type="VARCHAR(10)"/>
+            <column name="CODIGO_EXTERNO" type="VARCHAR(255)"/>
+            <column name="COD_EMPRESA_SENIOR" type="VARCHAR(40)"/>
+            <column name="PRIM_IMPORT_FUNC_SENIOR_SUCESSO" type="BOOLEAN"/>
+            <column name="AUTO_ATENDIMENTO" type="BOOLEAN"/>
+            <column name="ID_CLIENTE" type="BIGINT"/>
+        </createTable>
+
+        <!-- TB_DEPARTAMENTO -->
+        <createTable tableName="TB_DEPARTAMENTO">
+            <column name="ID_DEPARTAMENTO" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="DATA_CRIACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="DATA_ALTERACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VERSAO" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="REMOVIDO" type="CHAR(1)"/>
+            <column name="DATA_REMOVIDO" type="DATETIME"/>
+            <column name="UNIQUE_ID" type="VARCHAR(36)"/>
+
+            <column name="NOME" type="VARCHAR(255)"/>
+            <column name="STATUS" type="VARCHAR(100)"/>
+            <column name="ID_EMPRESA" type="BIGINT"/>
+        </createTable>
+
+        <!-- TB_CENTRO_CUSTO -->
+        <createTable tableName="TB_CENTRO_CUSTO">
+            <column name="ID_CENTRO_CUSTO" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="DATA_CRIACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="DATA_ALTERACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VERSAO" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="REMOVIDO" type="CHAR(1)"/>
+            <column name="DATA_REMOVIDO" type="DATETIME"/>
+            <column name="UNIQUE_ID" type="VARCHAR(36)"/>
+
+            <column name="NOME" type="VARCHAR(255)"/>
+            <column name="STATUS" type="VARCHAR(100)"/>
+            <column name="ID_EMPRESA" type="BIGINT"/>
+        </createTable>
+
+        <!-- TB_CARGO -->
+        <createTable tableName="TB_CARGO">
+            <column name="ID_CARGO" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="DATA_CRIACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="DATA_ALTERACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VERSAO" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="REMOVIDO" type="CHAR(1)"/>
+            <column name="DATA_REMOVIDO" type="DATETIME"/>
+            <column name="UNIQUE_ID" type="VARCHAR(36)"/>
+
+            <column name="NOME" type="VARCHAR(255)"/>
+            <column name="STATUS" type="VARCHAR(100)"/>
+            <column name="ID_EMPRESA" type="BIGINT"/>
+        </createTable>
+
+        <!-- Foreign Keys -->
+        <addForeignKeyConstraint baseTableName="TB_EMPRESA" baseColumnNames="ID_CLIENTE"
+                                constraintName="FK_EMPRESA_CLIENTE" referencedTableName="TB_CLIENTE" referencedColumnNames="ID_CLIENTE"/>
+        <addForeignKeyConstraint baseTableName="TB_DEPARTAMENTO" baseColumnNames="ID_EMPRESA"
+                                constraintName="FK_DEPARTAMENTO_EMPRESA" referencedTableName="TB_EMPRESA" referencedColumnNames="ID_EMPRESA"/>
+        <addForeignKeyConstraint baseTableName="TB_CENTRO_CUSTO" baseColumnNames="ID_EMPRESA"
+                                constraintName="FK_CENTROCUSTO_EMPRESA" referencedTableName="TB_EMPRESA" referencedColumnNames="ID_EMPRESA"/>
+        <addForeignKeyConstraint baseTableName="TB_CARGO" baseColumnNames="ID_EMPRESA"
+                                constraintName="FK_CARGO_EMPRESA" referencedTableName="TB_EMPRESA" referencedColumnNames="ID_EMPRESA"/>
+
+    </changeSet>
+
+</databaseChangeLog>

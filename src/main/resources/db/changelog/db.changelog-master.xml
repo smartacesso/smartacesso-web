@@ -7,5 +7,7 @@
 
     <include file="changesets/001-initial-schema.xml"
              relativeToChangelogFile="true"/>
+    <include file="changesets/002-empresa-departamento-centro-cargo-schema.xml"
+             relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
