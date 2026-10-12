@@ -5,7 +5,9 @@ import br.com.startjob.acesso.core.domain.empresa.CentroCusto;
 import br.com.startjob.acesso.core.domain.empresa.Departamento;
 import br.com.startjob.acesso.core.domain.empresa.Empresa;
 import br.com.startjob.acesso.core.enumeration.Status;
+import br.com.startjob.acesso.core.exception.BusinessException;
 import br.com.startjob.acesso.core.usecase.empresa.ConsultaEmpresaUseCase;
+import br.com.startjob.acesso.core.usecase.empresa.ExcluirEmpresaUseCase;
 import br.com.startjob.acesso.entrypoint.api.handler.GlobalExceptionHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -25,6 +27,7 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -34,6 +37,9 @@ class EmpresaControllerTest {
 
     @Mock
     private ConsultaEmpresaUseCase consultaEmpresaUseCase;
+
+    @Mock
+    private ExcluirEmpresaUseCase excluirEmpresaUseCase;
 
     @InjectMocks
     private EmpresaController empresaController;
@@ -95,5 +101,61 @@ class EmpresaControllerTest {
                 .andExpect(jsonPath("$.size").value(10));
 
         verify(consultaEmpresaUseCase, times(1)).execute(eq("ABC"), eq("123"), any());
+    }
+
+    @Test
+    @DisplayName("DELETE /api/v1/empresas/{id} deve retornar 204 No Content quando sucesso")
+    void deveExcluirEmpresaComSucesso() throws Exception {
+        doNothing().when(excluirEmpresaUseCase).execute(5L);
+
+        mockMvc.perform(delete("/api/v1/empresas/{id}", 5L))
+                .andExpect(status().isNoContent());
+
+        verify(excluirEmpresaUseCase, times(1)).execute(5L);
+    }
+
+    @Test
+    @DisplayName("DELETE /api/v1/empresas/{id} deve retornar 400 Bad Request quando sem permissao")
+    void deveRetornar400QuandoSemPermissao() throws Exception {
+        doThrow(new BusinessException("Você não possui permissão para excluir empresas."))
+                .when(excluirEmpresaUseCase).execute(5L);
+
+        mockMvc.perform(delete("/api/v1/empresas/{id}", 5L))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.code").value("BUSINESS_ERROR"))
+                .andExpect(jsonPath("$.message").value("Você não possui permissão para excluir empresas."));
+
+        verify(excluirEmpresaUseCase, times(1)).execute(5L);
+    }
+
+    @Test
+    @DisplayName("DELETE /api/v1/empresas/{id} deve retornar 400 Bad Request quando empresa nao encontrada")
+    void deveRetornar400QuandoEmpresaNaoEncontrada() throws Exception {
+        doThrow(new BusinessException("Empresa não encontrada."))
+                .when(excluirEmpresaUseCase).execute(99L);
+
+        mockMvc.perform(delete("/api/v1/empresas/{id}", 99L))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.code").value("BUSINESS_ERROR"))
+                .andExpect(jsonPath("$.message").value("Empresa não encontrada."));
+
+        verify(excluirEmpresaUseCase, times(1)).execute(99L);
+    }
+
+    @Test
+    @DisplayName("DELETE /api/v1/empresas/{id} deve retornar 400 Bad Request quando empresa nao pertence ao cliente")
+    void deveRetornar400QuandoEmpresaDeOutroCliente() throws Exception {
+        doThrow(new BusinessException("A empresa não pertence ao seu cliente."))
+                .when(excluirEmpresaUseCase).execute(10L);
+
+        mockMvc.perform(delete("/api/v1/empresas/{id}", 10L))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.code").value("BUSINESS_ERROR"))
+                .andExpect(jsonPath("$.message").value("A empresa não pertence ao seu cliente."));
+
+        verify(excluirEmpresaUseCase, times(1)).execute(10L);
     }
 }

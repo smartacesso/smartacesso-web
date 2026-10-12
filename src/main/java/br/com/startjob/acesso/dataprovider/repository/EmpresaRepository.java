@@ -11,6 +11,9 @@ import java.util.Optional;
 
 public interface EmpresaRepository extends JpaRepository<EmpresaEntity, Long> {
 
+    @Query("select e from EmpresaEntity e left join fetch e.cliente where e.id = :id")
+    Optional<EmpresaEntity> findByIdWithCliente(@Param("id") Long id);
+
     @Query("select e from EmpresaEntity e where e.id = :id and (e.removido = false or e.removido is null)")
     Optional<EmpresaEntity> findByIdActive(@Param("id") Long id);
 
