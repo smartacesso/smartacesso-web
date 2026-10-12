@@ -31,18 +31,21 @@ public record EmpresaResponse(
         List<DepartamentoResponse> departamentos = domain.getDepartamentos() == null
                 ? Collections.emptyList()
                 : domain.getDepartamentos().stream()
+                        .filter(d -> d.getRemovido() == null || !d.getRemovido())
                         .map(DepartamentoResponse::fromDomain)
                         .toList();
 
         List<CentroCustoResponse> centros = domain.getCentros() == null
                 ? Collections.emptyList()
                 : domain.getCentros().stream()
+                        .filter(c -> c.getRemovido() == null || !c.getRemovido())
                         .map(CentroCustoResponse::fromDomain)
                         .toList();
 
         List<CargoResponse> cargos = domain.getCargos() == null
                 ? Collections.emptyList()
                 : domain.getCargos().stream()
+                        .filter(c -> c.getRemovido() == null || !c.getRemovido())
                         .map(CargoResponse::fromDomain)
                         .toList();
 
