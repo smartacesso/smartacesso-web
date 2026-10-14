@@ -7,6 +7,7 @@ import br.com.startjob.acesso.core.enumeration.Status;
 import br.com.startjob.acesso.core.enumeration.TipoPedestre;
 import br.com.startjob.acesso.core.enumeration.TipoRegra;
 import br.com.startjob.acesso.core.usecase.regra.ConsultaRegraUseCase;
+import br.com.startjob.acesso.core.usecase.regra.ExcluirRegraUseCase;
 import br.com.startjob.acesso.entrypoint.api.handler.GlobalExceptionHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -26,8 +27,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -37,6 +38,9 @@ class RegraControllerTest {
 
     @Mock
     private ConsultaRegraUseCase consultaRegraUseCase;
+
+    @Mock
+    private ExcluirRegraUseCase excluirRegraUseCase;
 
     @InjectMocks
     private RegraController regraController;
@@ -127,5 +131,29 @@ class RegraControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
                 .andExpect(jsonPath("$.totalElements").value(0));
+    }
+
+    @Test
+    @DisplayName("DELETE /api/v1/regras/{id} deve retornar 204 No Content ao excluir regra com sucesso")
+    void deveExcluirRegraComSucesso() throws Exception {
+        doNothing().when(excluirRegraUseCase).execute(10L);
+
+        mockMvc.perform(delete("/api/v1/regras/{id}", 10L))
+                .andExpect(status().isNoContent());
+
+        verify(excluirRegraUseCase).execute(10L);
+    }
+
+    @Test
+    @DisplayName("DELETE /api/v1/regras/{id} deve retornar 400 Bad Request quando BusinessException for lançada")
+    void deveRetornarBadRequestQuandoBusinessException() throws Exception {
+        doThrow(new br.com.startjob.acesso.core.exception.BusinessException("Você não possui permissão para excluir regras de acesso."))
+                .when(excluirRegraUseCase).execute(10L);
+
+        mockMvc.perform(delete("/api/v1/regras/{id}", 10L))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Você não possui permissão para excluir regras de acesso."));
+
+        verify(excluirRegraUseCase).execute(10L);
     }
 }

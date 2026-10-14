@@ -3,6 +3,7 @@ package br.com.startjob.acesso.entrypoint.api.controller;
 import br.com.startjob.acesso.core.enumeration.TipoPedestre;
 import br.com.startjob.acesso.core.enumeration.TipoRegra;
 import br.com.startjob.acesso.core.usecase.regra.ConsultaRegraUseCase;
+import br.com.startjob.acesso.core.usecase.regra.ExcluirRegraUseCase;
 import br.com.startjob.acesso.entrypoint.api.dto.PageResponse;
 import br.com.startjob.acesso.entrypoint.api.dto.RegraResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,10 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -24,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class RegraController {
 
     private final ConsultaRegraUseCase consultaRegraUseCase;
+    private final ExcluirRegraUseCase excluirRegraUseCase;
 
     @Operation(summary = "Lista regras de acesso paginadas com filtros por nome, empresa vinculada, tipo pedestre e tipo de regra")
     @GetMapping
@@ -48,5 +47,15 @@ public class RegraController {
                         .map(RegraResponse::fromDomain));
 
         return ResponseEntity.ok(page);
+    }
+
+    @Operation(summary = "Exclui uma regra de acesso")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> excluirRegra(@PathVariable Long id) {
+        log.info("Excluindo regra de acesso - id: {}", id);
+
+        excluirRegraUseCase.execute(id);
+
+        return ResponseEntity.noContent().build();
     }
 }
