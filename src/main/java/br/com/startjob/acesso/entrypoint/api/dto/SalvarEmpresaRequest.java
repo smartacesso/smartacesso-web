@@ -8,7 +8,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 
-import java.util.Collections;
 import java.util.List;
 
 @Builder
@@ -60,7 +59,7 @@ public record SalvarEmpresaRequest(
                 .status(status)
                 .codigoExterno(codigoExterno)
                 .codEmpresaSenior(codEmpresaSenior)
-                .autoAtendimentoLiberado(autoAtendimentoLiberado != null ? autoAtendimentoLiberado : false)
+                .autoAtendimentoLiberado(autoAtendimentoLiberado != null && autoAtendimentoLiberado)
                 .departamentos(departamentos == null ? null : departamentos.stream().map(SalvarDepartamentoRequest::toDomain).toList())
                 .centros(centros == null ? null : centros.stream().map(SalvarCentroCustoRequest::toDomain).toList())
                 .cargos(cargos == null ? null : cargos.stream().map(SalvarCargoRequest::toDomain).toList())
