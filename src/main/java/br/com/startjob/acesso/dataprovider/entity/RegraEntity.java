@@ -7,6 +7,8 @@ import br.com.startjob.acesso.core.enumeration.TipoRegra;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -87,6 +89,8 @@ public class RegraEntity extends BaseEntity {
     @JoinColumn(name = "ID_CLIENTE")
     private ClienteEntity cliente;
 
+    @BatchSize(size = 50)
+    @SQLRestriction("removido = 'F' or removido is null")
     @OneToMany(mappedBy = "regra", cascade = CascadeType.ALL, orphanRemoval = false, fetch = FetchType.LAZY)
     private List<HorarioEntity> horarios = new ArrayList<>();
 }

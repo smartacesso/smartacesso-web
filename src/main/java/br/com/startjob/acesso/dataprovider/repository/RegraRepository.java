@@ -13,7 +13,7 @@ import java.util.Optional;
 
 public interface RegraRepository extends JpaRepository<RegraEntity, Long> {
 
-    @Query("select r from RegraEntity r left join fetch r.empresa left join fetch r.cliente where r.id = :id")
+    @Query("select distinct r from RegraEntity r left join fetch r.empresa left join fetch r.cliente left join fetch r.horarios where r.id = :id")
     Optional<RegraEntity> findByIdComplete(@Param("id") Long id);
 
     @Query("select r from RegraEntity r where r.id = :id and (r.removido = false or r.removido is null)")

@@ -114,4 +114,68 @@ class ConsultaRegraUseCaseTest {
         assertEquals("Usuário logado não possui cliente associado", ex.getMessage());
         verify(regraGateway, never()).buscarRegras(any(), any(), any(), any(), any(), any(), any());
     }
+
+    @Test
+    @DisplayName("Deve buscar regra por id com sucesso para o cliente do usuário logado")
+    void deveBuscarRegraPorIdComSucesso() {
+        Long idCliente = 10L;
+        Cliente cliente = Cliente.builder().id(idCliente).nome("Cliente Teste").build();
+        Usuario usuarioLogado = Usuario.builder().id(1L).nome("Admin").cliente(cliente).build();
+
+        when(usuarioGateway.findLoggedUser()).thenReturn(Optional.of(usuarioLogado));
+
+        Regra regra = Regra.builder()
+                .id(50L)
+                .nome("Regra 50")
+                .cliente(cliente)
+                .removido(false)
+                .build();
+
+        when(regraGateway.findById(50L)).thenReturn(Optional.of(regra));
+
+        Regra resultado = consultaRegraUseCase.buscarPorId(50L);
+
+        assertNotNull(resultado);
+        assertEquals(50L, resultado.getId());
+        assertEquals("Regra 50", resultado.getNome());
+        verify(regraGateway).findById(50L);
+    }
+
+    @Test
+    @DisplayName("Deve lançar BusinessException quando id for nulo em buscarPorId")
+    void deveFalharBuscarPorIdQuandoIdNulo() {
+        BusinessException ex = assertThrows(BusinessException.class, () -> consultaRegraUseCase.buscarPorId(null));
+        assertEquals("Identificador da regra não informado.", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("Deve lançar BusinessException quando regra não for encontrada")
+    void deveFalharBuscarPorIdQuandoNaoEncontrada() {
+        Long idCliente = 10L;
+        Cliente cliente = Cliente.builder().id(idCliente).nome("Cliente Teste").build();
+        Usuario usuarioLogado = Usuario.builder().id(1L).nome("Admin").cliente(cliente).build();
+
+        when(usuarioGateway.findLoggedUser()).thenReturn(Optional.of(usuarioLogado));
+        when(regraGateway.findById(999L)).thenReturn(Optional.empty());
+
+        BusinessException ex = assertThrows(BusinessException.class, () -> consultaRegraUseCase.buscarPorId(999L));
+        assertEquals("Regra não encontrada.", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("Deve lançar BusinessException quando regra pertencer a outro cliente")
+    void deveFalharBuscarPorIdQuandoRegraDeOutroCliente() {
+        Long idCliente = 10L;
+        Cliente cliente = Cliente.builder().id(idCliente).nome("Cliente Teste").build();
+        Usuario usuarioLogado = Usuario.builder().id(1L).nome("Admin").cliente(cliente).build();
+
+        when(usuarioGateway.findLoggedUser()).thenReturn(Optional.of(usuarioLogado));
+
+        Cliente outroCliente = Cliente.builder().id(999L).build();
+        Regra regraOutro = Regra.builder().id(50L).cliente(outroCliente).removido(false).build();
+        when(regraGateway.findById(50L)).thenReturn(Optional.of(regraOutro));
+
+        BusinessException ex = assertThrows(BusinessException.class, () -> consultaRegraUseCase.buscarPorId(50L));
+        assertEquals("A regra não pertence ao seu cliente.", ex.getMessage());
+    }
 }

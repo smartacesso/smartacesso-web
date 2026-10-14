@@ -44,4 +44,30 @@ public class ConsultaRegraUseCase {
                 pageable
         );
     }
+
+    public Regra buscarPorId(Long id) {
+        if (id == null) {
+            throw new BusinessException("Identificador da regra não informado.");
+        }
+
+        Usuario loggedUser = usuarioGateway.findLoggedUser()
+                .orElseThrow(() -> new BusinessException("Usuário logado não encontrado"));
+
+        if (loggedUser.getCliente() == null || loggedUser.getCliente().getId() == null) {
+            throw new BusinessException("Usuário logado não possui cliente associado");
+        }
+
+        Regra regra = regraGateway.findById(id)
+                .orElseThrow(() -> new BusinessException("Regra não encontrada."));
+
+        if (Boolean.TRUE.equals(regra.getRemovido())) {
+            throw new BusinessException("Regra não encontrada.");
+        }
+
+        if (regra.getCliente() == null || !regra.getCliente().getId().equals(loggedUser.getCliente().getId())) {
+            throw new BusinessException("A regra não pertence ao seu cliente.");
+        }
+
+        return regra;
+    }
 }

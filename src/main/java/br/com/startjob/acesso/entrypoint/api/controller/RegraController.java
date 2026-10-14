@@ -4,10 +4,13 @@ import br.com.startjob.acesso.core.enumeration.TipoPedestre;
 import br.com.startjob.acesso.core.enumeration.TipoRegra;
 import br.com.startjob.acesso.core.usecase.regra.ConsultaRegraUseCase;
 import br.com.startjob.acesso.core.usecase.regra.ExcluirRegraUseCase;
+import br.com.startjob.acesso.core.usecase.regra.SalvarRegraUseCase;
 import br.com.startjob.acesso.entrypoint.api.dto.PageResponse;
 import br.com.startjob.acesso.entrypoint.api.dto.RegraResponse;
+import br.com.startjob.acesso.entrypoint.api.dto.SalvarRegraRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 public class RegraController {
 
     private final ConsultaRegraUseCase consultaRegraUseCase;
+    private final SalvarRegraUseCase salvarRegraUseCase;
     private final ExcluirRegraUseCase excluirRegraUseCase;
 
     @Operation(summary = "Lista regras de acesso paginadas com filtros por nome, empresa vinculada, tipo pedestre e tipo de regra")
@@ -47,6 +51,28 @@ public class RegraController {
                         .map(RegraResponse::fromDomain));
 
         return ResponseEntity.ok(page);
+    }
+
+    @Operation(summary = "Busca uma regra de acesso pelo identificador")
+    @GetMapping("/{id}")
+    public ResponseEntity<RegraResponse> buscarPorId(@PathVariable Long id) {
+        log.info("Buscando regra de acesso - id: {}", id);
+
+        var regra = consultaRegraUseCase.buscarPorId(id);
+
+        return ResponseEntity.ok(RegraResponse.fromDomain(regra));
+    }
+
+    @Operation(summary = "Cria ou edita uma regra de acesso")
+    @PostMapping
+    public ResponseEntity<RegraResponse> salvarRegra(
+            @Valid @RequestBody SalvarRegraRequest request) {
+
+        log.info("Salvando regra de acesso - id: {}, nome: {}", request.id(), request.nome());
+
+        var regraSalva = salvarRegraUseCase.execute(request.toDomain());
+
+        return ResponseEntity.ok(RegraResponse.fromDomain(regraSalva));
     }
 
     @Operation(summary = "Exclui uma regra de acesso")
