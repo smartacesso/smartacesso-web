@@ -24,17 +24,27 @@ public record UsuarioResponse(
         Boolean usuarioMaster,
         Boolean expedidora,
         @JsonInclude(JsonInclude.Include.NON_NULL)
+        EnderecoResponse endereco,
+        @JsonInclude(JsonInclude.Include.NON_NULL)
         ClienteResponse cliente
 ) {
     public static UsuarioResponse fromDomain(Usuario domain) {
-        return fromDomain(domain, true);
+        return fromDomain(domain, true, true);
     }
 
     public static UsuarioResponse fromDomainSemCliente(Usuario domain) {
-        return fromDomain(domain, false);
+        return fromDomain(domain, false, false);
     }
 
     public static UsuarioResponse fromDomain(Usuario domain, boolean incluirCliente) {
+        return fromDomain(domain, incluirCliente, true);
+    }
+
+    private static UsuarioResponse fromDomain(
+            Usuario domain,
+            boolean incluirCliente,
+            boolean incluirEndereco
+    ) {
         if (domain == null) {
             return null;
         }
@@ -55,6 +65,7 @@ public record UsuarioResponse(
                 domain.getCadastroSimples(),
                 domain.getUsuarioMaster(),
                 domain.getExpedidora(),
+                incluirEndereco ? EnderecoResponse.fromDomain(domain.getEndereco()) : null,
                 incluirCliente && domain.getCliente() != null
                         ? ClienteResponse.fromDomain(domain.getCliente())
                         : null

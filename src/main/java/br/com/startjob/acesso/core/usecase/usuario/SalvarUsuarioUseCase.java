@@ -56,6 +56,9 @@ public class SalvarUsuarioUseCase {
             
             // Define o cliente do novo usuário como o mesmo do usuário logado
             usuarioNovoOuEditado.setCliente(usuarioLogado.getCliente());
+            if (isEnderecoEmpty(usuarioNovoOuEditado.getEndereco())) {
+                usuarioNovoOuEditado.setEndereco(null);
+            }
 
         } else {
             Usuario usuarioExistente = usuarioGateway.findById(usuarioNovoOuEditado.getId())
@@ -75,12 +78,33 @@ public class SalvarUsuarioUseCase {
 
             // Mantém o mesmo cliente
             usuarioNovoOuEditado.setCliente(usuarioExistente.getCliente());
+            if (usuarioNovoOuEditado.getEndereco() == null) {
+                usuarioNovoOuEditado.setEndereco(usuarioExistente.getEndereco());
+            } else if (isEnderecoEmpty(usuarioNovoOuEditado.getEndereco())) {
+                usuarioNovoOuEditado.setEndereco(null);
+            } else if (usuarioExistente.getEndereco() != null && usuarioNovoOuEditado.getEndereco().getId() == null) {
+                usuarioNovoOuEditado.getEndereco().setId(usuarioExistente.getEndereco().getId());
+            }
             
             // Mantém outros campos que não podem ser alterados ou são de controle, caso aplicável
             usuarioNovoOuEditado.setDataCriacao(usuarioExistente.getDataCriacao());
+            usuarioNovoOuEditado.setVersao(usuarioExistente.getVersao());
+            usuarioNovoOuEditado.setUniqueId(usuarioExistente.getUniqueId());
+            usuarioNovoOuEditado.setRemovido(usuarioExistente.getRemovido());
         }
 
         return usuarioGateway.save(usuarioNovoOuEditado);
+    }
+
+    private boolean isEnderecoEmpty(br.com.startjob.acesso.core.domain.endereco.Endereco endereco) {
+        if (endereco == null) return true;
+        return (endereco.getCep() == null || endereco.getCep().isBlank())
+                && (endereco.getLogradouro() == null || endereco.getLogradouro().isBlank())
+                && (endereco.getNumero() == null || endereco.getNumero().isBlank())
+                && (endereco.getComplemento() == null || endereco.getComplemento().isBlank())
+                && (endereco.getBairro() == null || endereco.getBairro().isBlank())
+                && (endereco.getCidade() == null || endereco.getCidade().isBlank())
+                && (endereco.getEstado() == null || endereco.getEstado().isBlank());
     }
 
     private void validarSenhas(String senha, String confirmarSenha) {

@@ -2,6 +2,7 @@ package br.com.startjob.acesso.core.domain.usuario;
 
 import br.com.startjob.acesso.core.domain.BaseDomain;
 import br.com.startjob.acesso.core.domain.cliente.Cliente;
+import br.com.startjob.acesso.core.domain.endereco.Endereco;
 import br.com.startjob.acesso.core.enumeration.PerfilAcesso;
 import br.com.startjob.acesso.core.enumeration.Status;
 import lombok.*;
@@ -53,6 +54,8 @@ public class Usuario extends BaseDomain {
     private Boolean expedidora = false;
 
     private Cliente cliente;
+
+    private Endereco endereco;
 
     private String chaveIntegracaoComtele;
 

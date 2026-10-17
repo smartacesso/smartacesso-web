@@ -78,4 +78,8 @@ public class UsuarioEntity extends BaseEntity {
     @JoinColumn(name = "ID_CLIENTE")
     private ClienteEntity cliente;
 
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "ID_ENDERECO")
+    private EnderecoEntity endereco;
+
 }

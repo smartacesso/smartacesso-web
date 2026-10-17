@@ -103,11 +103,22 @@ class ConsultaUsuarioUseCaseTest {
 
         when(usuarioGateway.findLoggedUser()).thenReturn(Optional.of(usuarioLogado));
 
+        var endereco = br.com.startjob.acesso.core.domain.endereco.Endereco.builder()
+                .id(1L)
+                .cep("38400-000")
+                .logradouro("Rua das Acácias")
+                .numero("456")
+                .bairro("Bairro Novo")
+                .cidade("Uberlândia")
+                .estado("MG")
+                .build();
+
         Usuario usuario = Usuario.builder()
                 .id(100L)
                 .nome("Maria Silva")
                 .login("maria.silva")
                 .cliente(cliente)
+                .endereco(endereco)
                 .removido(false)
                 .status(Status.ATIVO)
                 .perfil(PerfilAcesso.ADMINISTRADOR)
@@ -122,6 +133,9 @@ class ConsultaUsuarioUseCaseTest {
         assertEquals("Maria Silva", resultado.getNome());
         assertEquals("maria.silva", resultado.getLogin());
         assertEquals(idCliente, resultado.getCliente().getId());
+        assertNotNull(resultado.getEndereco());
+        assertEquals("38400-000", resultado.getEndereco().getCep());
+        assertEquals("Rua das Acácias", resultado.getEndereco().getLogradouro());
 
         verify(usuarioGateway, times(1)).findLoggedUser();
         verify(usuarioGateway, times(1)).findById(100L);

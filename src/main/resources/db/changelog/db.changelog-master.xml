@@ -13,5 +13,7 @@
              relativeToChangelogFile="true"/>
     <include file="changesets/004-endereco-schema.xml"
              relativeToChangelogFile="true"/>
+    <include file="changesets/005-usuario-endereco-schema.xml"
+             relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

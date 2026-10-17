@@ -7,7 +7,7 @@ import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring", uses = ClienteMapper.class, builder = @Builder(disableBuilder = true))
+@Mapper(componentModel = "spring", uses = {ClienteMapper.class, EnderecoMapper.class}, builder = @Builder(disableBuilder = true))
 public interface UsuarioMapper {
 
     @Mapping(target = "cliente", qualifiedByName = "clienteResumo")

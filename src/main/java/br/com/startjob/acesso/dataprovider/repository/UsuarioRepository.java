@@ -14,7 +14,7 @@ import java.util.Optional;
 
 public interface UsuarioRepository extends JpaRepository<UsuarioEntity, Long> {
 
-    @Query("select u from UsuarioEntity u left join fetch u.cliente where u.id = :id")
+    @Query("select u from UsuarioEntity u left join fetch u.cliente left join fetch u.endereco where u.id = :id")
     Optional<UsuarioEntity> findByIdWithCliente(@Param("id") Long id);
 
     @Query("""
@@ -26,7 +26,7 @@ public interface UsuarioRepository extends JpaRepository<UsuarioEntity, Long> {
             """)
     List<UsuarioEntity> findByLoginAndUnidade(@Param("login") String login, @Param("unidade") String unidade);
 
-    @EntityGraph(attributePaths = "cliente")
+    @EntityGraph(attributePaths = {"cliente", "endereco"})
     @Query("""
             select u from UsuarioEntity u
             where u.cliente.id = :idCliente
