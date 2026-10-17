@@ -24,4 +24,30 @@ public class ConsultaUsuarioUseCase {
 
         return usuarioGateway.buscarUsuarios(loggedUser.getCliente().getId(), nome, cpf, pageable);
     }
+
+    public Usuario buscarPorId(Long id) {
+        if (id == null) {
+            throw new BusinessException("Identificador do usuário não informado.");
+        }
+
+        Usuario loggedUser = usuarioGateway.findLoggedUser()
+                .orElseThrow(() -> new BusinessException("Usuário logado não encontrado"));
+
+        if (loggedUser.getCliente() == null || loggedUser.getCliente().getId() == null) {
+            throw new BusinessException("Usuário logado não possui cliente associado");
+        }
+
+        Usuario usuario = usuarioGateway.findById(id)
+                .orElseThrow(() -> new BusinessException("Usuário não encontrado."));
+
+        if (Boolean.TRUE.equals(usuario.getRemovido())) {
+            throw new BusinessException("Usuário não encontrado.");
+        }
+
+        if (usuario.getCliente() == null || !usuario.getCliente().getId().equals(loggedUser.getCliente().getId())) {
+            throw new BusinessException("O usuário não pertence ao seu cliente.");
+        }
+
+        return usuario;
+    }
 }

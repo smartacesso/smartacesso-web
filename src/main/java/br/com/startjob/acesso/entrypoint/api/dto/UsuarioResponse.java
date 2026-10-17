@@ -3,9 +3,10 @@ package br.com.startjob.acesso.entrypoint.api.dto;
 import br.com.startjob.acesso.core.domain.usuario.Usuario;
 import br.com.startjob.acesso.core.enumeration.PerfilAcesso;
 import br.com.startjob.acesso.core.enumeration.Status;
-import lombok.Builder;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
-@Builder
+import java.time.LocalDateTime;
+
 public record UsuarioResponse(
         Long id,
         String nome,
@@ -15,33 +16,48 @@ public record UsuarioResponse(
         String rg,
         String telefone,
         String celular,
+        LocalDateTime dataNascimento,
         Status status,
         PerfilAcesso perfil,
         Boolean acessaWeb,
         Boolean cadastroSimples,
         Boolean usuarioMaster,
-        Boolean expedidora
+        Boolean expedidora,
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        ClienteResponse cliente
 ) {
     public static UsuarioResponse fromDomain(Usuario domain) {
+        return fromDomain(domain, true);
+    }
+
+    public static UsuarioResponse fromDomainSemCliente(Usuario domain) {
+        return fromDomain(domain, false);
+    }
+
+    public static UsuarioResponse fromDomain(Usuario domain, boolean incluirCliente) {
         if (domain == null) {
             return null;
         }
 
-        return UsuarioResponse.builder()
-                .id(domain.getId())
-                .nome(domain.getNome())
-                .login(domain.getLogin())
-                .email(domain.getEmail())
-                .cpf(domain.getCpf())
-                .rg(domain.getRg())
-                .telefone(domain.getTelefone())
-                .celular(domain.getCelular())
-                .status(domain.getStatus())
-                .perfil(domain.getPerfil())
-                .acessaWeb(domain.getAcessaWeb())
-                .cadastroSimples(domain.getCadastroSimples())
-                .usuarioMaster(domain.getUsuarioMaster())
-                .expedidora(domain.getExpedidora())
-                .build();
+        return new UsuarioResponse(
+                domain.getId(),
+                domain.getNome(),
+                domain.getLogin(),
+                domain.getEmail(),
+                domain.getCpf(),
+                domain.getRg(),
+                domain.getTelefone(),
+                domain.getCelular(),
+                domain.getDataNascimento(),
+                domain.getStatus(),
+                domain.getPerfil(),
+                domain.getAcessaWeb(),
+                domain.getCadastroSimples(),
+                domain.getUsuarioMaster(),
+                domain.getExpedidora(),
+                incluirCliente && domain.getCliente() != null
+                        ? ClienteResponse.fromDomain(domain.getCliente())
+                        : null
+        );
     }
 }

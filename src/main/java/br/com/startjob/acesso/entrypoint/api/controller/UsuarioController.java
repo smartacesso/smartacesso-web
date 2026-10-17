@@ -37,9 +37,19 @@ public class UsuarioController {
 
         PageResponse<UsuarioResponse> page = PageResponse.from(
                 consultaUsuarioUseCase.execute(nome, cpf, pageable)
-                        .map(UsuarioResponse::fromDomain));
+                        .map(UsuarioResponse::fromDomainSemCliente));
 
         return ResponseEntity.ok(page);
+    }
+
+    @Operation(summary = "Busca um usuário pelo identificador")
+    @GetMapping("/{id}")
+    public ResponseEntity<UsuarioResponse> buscarPorId(@PathVariable Long id) {
+        log.info("Buscando usuário - id: {}", id);
+
+        var usuario = consultaUsuarioUseCase.buscarPorId(id);
+
+        return ResponseEntity.ok(UsuarioResponse.fromDomain(usuario));
     }
 
     @Operation(summary = "Cria ou edita um usuário")
