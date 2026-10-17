@@ -37,9 +37,19 @@ public class EmpresaController {
 
         PageResponse<EmpresaResponse> page = PageResponse.from(
                 consultaEmpresaUseCase.execute(nome, cnpj, pageable)
-                        .map(EmpresaResponse::fromDomain));
+                        .map(EmpresaResponse::fromDomainSemEndereco));
 
         return ResponseEntity.ok(page);
+    }
+
+    @Operation(summary = "Busca uma empresa pelo identificador")
+    @GetMapping("/{id}")
+    public ResponseEntity<EmpresaResponse> buscarPorId(@PathVariable Long id) {
+        log.info("Buscando empresa - id: {}", id);
+
+        var empresa = consultaEmpresaUseCase.buscarPorId(id);
+
+        return ResponseEntity.ok(EmpresaResponse.fromDomain(empresa));
     }
 
     @Operation(summary = "Cria ou edita uma empresa")

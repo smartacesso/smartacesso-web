@@ -11,5 +11,7 @@
              relativeToChangelogFile="true"/>
     <include file="changesets/003-regra-horario-schema.xml"
              relativeToChangelogFile="true"/>
+    <include file="changesets/004-endereco-schema.xml"
+             relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

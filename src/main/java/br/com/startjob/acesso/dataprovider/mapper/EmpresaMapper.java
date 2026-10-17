@@ -9,7 +9,7 @@ import org.mapstruct.Mapping;
 
 @Mapper(
         componentModel = "spring",
-        uses = {ClienteMapper.class, DepartamentoMapper.class, CentroCustoMapper.class, CargoMapper.class},
+        uses = {ClienteMapper.class, DepartamentoMapper.class, CentroCustoMapper.class, CargoMapper.class, EnderecoMapper.class},
         builder = @Builder(disableBuilder = true)
 )
 public interface EmpresaMapper {

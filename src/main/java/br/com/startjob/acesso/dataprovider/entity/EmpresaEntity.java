@@ -59,6 +59,10 @@ public class EmpresaEntity extends BaseEntity {
     @JoinColumn(name = "ID_CLIENTE")
     private ClienteEntity cliente;
 
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "ID_ENDERECO")
+    private EnderecoEntity endereco;
+
     @BatchSize(size = 50)
     @SQLRestriction("removido = 'F' or removido is null")
     @OneToMany(mappedBy = "empresa", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    logicalFilePath="db/changelog/changesets/004-endereco-schema.xml"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.24.xsd">
+
+    <changeSet id="004-endereco-schema" author="antigravity">
+
+        <!-- ID Generator for TB_ENDERECO -->
+        <insert tableName="TB_ID_GENERATOR">
+            <column name="GEN_NAME" value="TB_ENDERECO"/>
+            <column name="GEN_VALUE" valueNumeric="0"/>
+        </insert>
+
+        <!-- TB_ENDERECO -->
+        <createTable tableName="TB_ENDERECO">
+            <column name="ID_ENDERECO" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="DATA_CRIACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="DATA_ALTERACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VERSAO" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="REMOVIDO" type="CHAR(1)"/>
+            <column name="DATA_REMOVIDO" type="DATETIME"/>
+            <column name="UNIQUE_ID" type="VARCHAR(36)"/>
+
+            <column name="CEP" type="VARCHAR(20)"/>
+            <column name="LOGRADOURO" type="VARCHAR(255)"/>
+            <column name="NUMERO" type="VARCHAR(10)"/>
+            <column name="COMPLEMENTO" type="VARCHAR(255)"/>
+            <column name="BAIRRO" type="VARCHAR(100)"/>
+            <column name="CIDADE" type="VARCHAR(255)"/>
+            <column name="ESTADO" type="VARCHAR(100)"/>
+        </createTable>
+
+        <!-- Add ID_ENDERECO to TB_EMPRESA -->
+        <addColumn tableName="TB_EMPRESA">
+            <column name="ID_ENDERECO" type="BIGINT"/>
+        </addColumn>
+
+        <!-- Foreign Key FK_EMPRESA_ENDERECO -->
+        <addForeignKeyConstraint baseTableName="TB_EMPRESA" baseColumnNames="ID_ENDERECO"
+                                constraintName="FK_EMPRESA_ENDERECO" referencedTableName="TB_ENDERECO" referencedColumnNames="ID_ENDERECO"/>
+
+    </changeSet>
+
+</databaseChangeLog>

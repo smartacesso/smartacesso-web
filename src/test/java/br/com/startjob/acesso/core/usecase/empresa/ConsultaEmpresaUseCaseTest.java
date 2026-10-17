@@ -108,4 +108,140 @@ class ConsultaEmpresaUseCaseTest {
         assertEquals("Usuário logado não possui cliente associado", ex.getMessage());
         verify(empresaGateway, never()).buscarEmpresas(any(), any(), any(), any());
     }
+
+    @Test
+    @DisplayName("Deve buscar empresa por ID com sucesso para o cliente do usuário logado")
+    void deveBuscarEmpresaPorIdComSucesso() {
+        Long idCliente = 10L;
+        Cliente cliente = Cliente.builder().id(idCliente).nome("Cliente Teste").build();
+        Usuario usuarioLogado = Usuario.builder().id(1L).nome("Admin").cliente(cliente).build();
+
+        when(usuarioGateway.findLoggedUser()).thenReturn(Optional.of(usuarioLogado));
+
+        Empresa empresa = Empresa.builder()
+                .id(100L)
+                .nome("Empresa ABC")
+                .cnpj("12.345.678/0001-90")
+                .cliente(cliente)
+                .removido(false)
+                .departamentos(List.of(Departamento.builder().id(1L).nome("TI").status(Status.ATIVO).build()))
+                .centros(List.of(CentroCusto.builder().id(2L).nome("Financeiro").status(Status.ATIVO).build()))
+                .cargos(List.of(Cargo.builder().id(3L).nome("Analista").status(Status.ATIVO).build()))
+                .build();
+
+        when(empresaGateway.findById(100L)).thenReturn(Optional.of(empresa));
+
+        Empresa resultado = consultaEmpresaUseCase.buscarPorId(100L);
+
+        assertNotNull(resultado);
+        assertEquals(100L, resultado.getId());
+        assertEquals("Empresa ABC", resultado.getNome());
+        assertEquals(1, resultado.getDepartamentos().size());
+        assertEquals("TI", resultado.getDepartamentos().get(0).getNome());
+        verify(usuarioGateway, times(1)).findLoggedUser();
+        verify(empresaGateway, times(1)).findById(100L);
+    }
+
+    @Test
+    @DisplayName("Deve lançar BusinessException quando id for nulo em buscarPorId")
+    void deveLancarExcecaoQuandoIdNuloEmBuscarPorId() {
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> consultaEmpresaUseCase.buscarPorId(null));
+
+        assertEquals("Identificador da empresa não informado.", ex.getMessage());
+        verifyNoInteractions(usuarioGateway, empresaGateway);
+    }
+
+    @Test
+    @DisplayName("Deve lançar BusinessException quando usuário não estiver logado em buscarPorId")
+    void deveLancarExcecaoQuandoUsuarioNaoLogadoEmBuscarPorId() {
+        when(usuarioGateway.findLoggedUser()).thenReturn(Optional.empty());
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> consultaEmpresaUseCase.buscarPorId(100L));
+
+        assertEquals("Usuário logado não encontrado", ex.getMessage());
+        verify(empresaGateway, never()).findById(any());
+    }
+
+    @Test
+    @DisplayName("Deve lançar BusinessException quando usuário logado não possuir cliente em buscarPorId")
+    void deveLancarExcecaoQuandoUsuarioSemClienteEmBuscarPorId() {
+        Usuario usuarioLogado = Usuario.builder().id(1L).nome("Admin").cliente(null).build();
+        when(usuarioGateway.findLoggedUser()).thenReturn(Optional.of(usuarioLogado));
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> consultaEmpresaUseCase.buscarPorId(100L));
+
+        assertEquals("Usuário logado não possui cliente associado", ex.getMessage());
+        verify(empresaGateway, never()).findById(any());
+    }
+
+    @Test
+    @DisplayName("Deve lançar BusinessException quando empresa não for encontrada em buscarPorId")
+    void deveLancarExcecaoQuandoEmpresaNaoEncontradaEmBuscarPorId() {
+        Long idCliente = 10L;
+        Cliente cliente = Cliente.builder().id(idCliente).nome("Cliente Teste").build();
+        Usuario usuarioLogado = Usuario.builder().id(1L).nome("Admin").cliente(cliente).build();
+
+        when(usuarioGateway.findLoggedUser()).thenReturn(Optional.of(usuarioLogado));
+        when(empresaGateway.findById(999L)).thenReturn(Optional.empty());
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> consultaEmpresaUseCase.buscarPorId(999L));
+
+        assertEquals("Empresa não encontrada.", ex.getMessage());
+        verify(empresaGateway, times(1)).findById(999L);
+    }
+
+    @Test
+    @DisplayName("Deve lançar BusinessException quando empresa estiver com removido=true em buscarPorId")
+    void deveLancarExcecaoQuandoEmpresaRemovidaEmBuscarPorId() {
+        Long idCliente = 10L;
+        Cliente cliente = Cliente.builder().id(idCliente).nome("Cliente Teste").build();
+        Usuario usuarioLogado = Usuario.builder().id(1L).nome("Admin").cliente(cliente).build();
+
+        when(usuarioGateway.findLoggedUser()).thenReturn(Optional.of(usuarioLogado));
+
+        Empresa empresaRemovida = Empresa.builder()
+                .id(100L)
+                .nome("Empresa Removida")
+                .cliente(cliente)
+                .removido(true)
+                .build();
+
+        when(empresaGateway.findById(100L)).thenReturn(Optional.of(empresaRemovida));
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> consultaEmpresaUseCase.buscarPorId(100L));
+
+        assertEquals("Empresa não encontrada.", ex.getMessage());
+        verify(empresaGateway, times(1)).findById(100L);
+    }
+
+    @Test
+    @DisplayName("Deve lançar BusinessException quando empresa pertencer a outro cliente em buscarPorId")
+    void deveLancarExcecaoQuandoEmpresaDeOutroClienteEmBuscarPorId() {
+        Long idCliente = 10L;
+        Cliente cliente = Cliente.builder().id(idCliente).nome("Cliente Teste").build();
+        Usuario usuarioLogado = Usuario.builder().id(1L).nome("Admin").cliente(cliente).build();
+
+        when(usuarioGateway.findLoggedUser()).thenReturn(Optional.of(usuarioLogado));
+
+        Cliente outroCliente = Cliente.builder().id(999L).nome("Outro").build();
+        Empresa empresaOutro = Empresa.builder()
+                .id(100L)
+                .nome("Empresa Outro Cliente")
+                .cliente(outroCliente)
+                .removido(false)
+                .build();
+
+        when(empresaGateway.findById(100L)).thenReturn(Optional.of(empresaOutro));
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> consultaEmpresaUseCase.buscarPorId(100L));
+
+        assertEquals("A empresa não pertence ao seu cliente.", ex.getMessage());
+        verify(empresaGateway, times(1)).findById(100L);
+    }
 }

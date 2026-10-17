@@ -26,6 +26,8 @@ public record SalvarEmpresaRequest(
         String codigoExterno,
         String codEmpresaSenior,
         Boolean autoAtendimentoLiberado,
+        @Valid
+        SalvarEnderecoRequest endereco,
         List<@Valid SalvarDepartamentoRequest> departamentos,
         List<@Valid SalvarCentroCustoRequest> centros,
         List<@Valid SalvarCargoRequest> cargos
@@ -42,6 +44,7 @@ public record SalvarEmpresaRequest(
                 this.codigoExterno,
                 this.codEmpresaSenior,
                 this.autoAtendimentoLiberado,
+                this.endereco,
                 this.departamentos,
                 this.centros,
                 this.cargos
@@ -60,6 +63,7 @@ public record SalvarEmpresaRequest(
                 .codigoExterno(codigoExterno)
                 .codEmpresaSenior(codEmpresaSenior)
                 .autoAtendimentoLiberado(autoAtendimentoLiberado != null && autoAtendimentoLiberado)
+                .endereco(endereco != null ? endereco.toDomain() : null)
                 .departamentos(departamentos == null ? null : departamentos.stream().map(SalvarDepartamentoRequest::toDomain).toList())
                 .centros(centros == null ? null : centros.stream().map(SalvarCentroCustoRequest::toDomain).toList())
                 .cargos(cargos == null ? null : cargos.stream().map(SalvarCargoRequest::toDomain).toList())

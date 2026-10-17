@@ -4,6 +4,7 @@ import br.com.startjob.acesso.core.domain.empresa.Cargo;
 import br.com.startjob.acesso.core.domain.empresa.CentroCusto;
 import br.com.startjob.acesso.core.domain.empresa.Departamento;
 import br.com.startjob.acesso.core.domain.empresa.Empresa;
+import br.com.startjob.acesso.core.domain.endereco.Endereco;
 import br.com.startjob.acesso.core.enumeration.Status;
 import br.com.startjob.acesso.core.exception.BusinessException;
 import br.com.startjob.acesso.core.usecase.empresa.ConsultaEmpresaUseCase;
@@ -61,7 +62,7 @@ class EmpresaControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/v1/empresas deve retornar 200 OK com empresas paginadas contendo departamentos, centros e cargos")
+    @DisplayName("GET /api/v1/empresas deve retornar 200 OK com empresas paginadas contendo departamentos, centros e cargos sem endereco")
     void deveBuscarEmpresasComSucesso() throws Exception {
         Empresa empresa = Empresa.builder()
                 .id(1L)
@@ -70,6 +71,11 @@ class EmpresaControllerTest {
                 .email("contato@abc.com")
                 .telefone("11999998888")
                 .status(Status.ATIVO)
+                .endereco(Endereco.builder()
+                        .id(50L)
+                        .logradouro("Av. Oculta")
+                        .cidade("Uberlândia")
+                        .build())
                 .departamentos(List.of(
                         Departamento.builder().id(10L).nome("Departamento TI").status(Status.ATIVO).build()
                 ))
@@ -94,6 +100,7 @@ class EmpresaControllerTest {
                 .andExpect(jsonPath("$.content[0].nome").value("Empresa ABC"))
                 .andExpect(jsonPath("$.content[0].cnpj").value("12.345.678/0001-90"))
                 .andExpect(jsonPath("$.content[0].status").value("ATIVO"))
+                .andExpect(jsonPath("$.content[0].endereco").doesNotExist())
                 .andExpect(jsonPath("$.content[0].departamentos[0].id").value(10))
                 .andExpect(jsonPath("$.content[0].departamentos[0].nome").value("Departamento TI"))
                 .andExpect(jsonPath("$.content[0].departamentos[0].status").value("ATIVO"))
@@ -107,6 +114,114 @@ class EmpresaControllerTest {
                 .andExpect(jsonPath("$.size").value(10));
 
         verify(consultaEmpresaUseCase, times(1)).execute(eq("ABC"), eq("123"), any());
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/empresas/{id} deve retornar 200 OK com empresa completa contendo departamentos, centros, cargos e endereco sem ciclos")
+    void deveBuscarEmpresaPorIdComSucesso() throws Exception {
+        Empresa empresa = Empresa.builder()
+                .id(1L)
+                .nome("Empresa ABC")
+                .cnpj("12.345.678/0001-90")
+                .email("contato@abc.com")
+                .telefone("11999998888")
+                .celular("11988887777")
+                .status(Status.ATIVO)
+                .codigoExterno("EXT-123")
+                .codEmpresaSenior("SENIOR-01")
+                .autoAtendimentoLiberado(true)
+                .endereco(Endereco.builder()
+                        .id(50L)
+                        .cep("38400-000")
+                        .logradouro("Av. Rondon Pacheco")
+                        .numero("1000")
+                        .complemento("Sala 101")
+                        .bairro("Tabajaras")
+                        .cidade("Uberlândia")
+                        .estado("MG")
+                        .build())
+                .departamentos(List.of(
+                        Departamento.builder().id(10L).nome("Departamento TI").status(Status.ATIVO).build()
+                ))
+                .centros(List.of(
+                        CentroCusto.builder().id(20L).nome("Centro Financeiro").status(Status.ATIVO).build()
+                ))
+                .cargos(List.of(
+                        Cargo.builder().id(30L).nome("Analista de Sistemas").status(Status.ATIVO).build()
+                ))
+                .build();
+
+        // Simula referência bidirecional no modelo de domínio para garantir que a resposta não gera loop
+        empresa.getDepartamentos().get(0).setEmpresa(empresa);
+        empresa.getCentros().get(0).setEmpresa(empresa);
+        empresa.getCargos().get(0).setEmpresa(empresa);
+
+        when(consultaEmpresaUseCase.buscarPorId(1L)).thenReturn(empresa);
+
+        mockMvc.perform(get("/api/v1/empresas/{id}", 1L))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.nome").value("Empresa ABC"))
+                .andExpect(jsonPath("$.cnpj").value("12.345.678/0001-90"))
+                .andExpect(jsonPath("$.email").value("contato@abc.com"))
+                .andExpect(jsonPath("$.telefone").value("11999998888"))
+                .andExpect(jsonPath("$.celular").value("11988887777"))
+                .andExpect(jsonPath("$.status").value("ATIVO"))
+                .andExpect(jsonPath("$.codigoExterno").value("EXT-123"))
+                .andExpect(jsonPath("$.codEmpresaSenior").value("SENIOR-01"))
+                .andExpect(jsonPath("$.autoAtendimentoLiberado").value(true))
+                .andExpect(jsonPath("$.endereco.id").value(50))
+                .andExpect(jsonPath("$.endereco.cep").value("38400-000"))
+                .andExpect(jsonPath("$.endereco.logradouro").value("Av. Rondon Pacheco"))
+                .andExpect(jsonPath("$.endereco.numero").value("1000"))
+                .andExpect(jsonPath("$.endereco.complemento").value("Sala 101"))
+                .andExpect(jsonPath("$.endereco.bairro").value("Tabajaras"))
+                .andExpect(jsonPath("$.endereco.cidade").value("Uberlândia"))
+                .andExpect(jsonPath("$.endereco.estado").value("MG"))
+                .andExpect(jsonPath("$.departamentos[0].id").value(10))
+                .andExpect(jsonPath("$.departamentos[0].nome").value("Departamento TI"))
+                .andExpect(jsonPath("$.departamentos[0].status").value("ATIVO"))
+                .andExpect(jsonPath("$.departamentos[0].empresa").doesNotExist())
+                .andExpect(jsonPath("$.centros[0].id").value(20))
+                .andExpect(jsonPath("$.centros[0].nome").value("Centro Financeiro"))
+                .andExpect(jsonPath("$.centros[0].status").value("ATIVO"))
+                .andExpect(jsonPath("$.centros[0].empresa").doesNotExist())
+                .andExpect(jsonPath("$.cargos[0].id").value(30))
+                .andExpect(jsonPath("$.cargos[0].nome").value("Analista de Sistemas"))
+                .andExpect(jsonPath("$.cargos[0].status").value("ATIVO"))
+                .andExpect(jsonPath("$.cargos[0].empresa").doesNotExist());
+
+        verify(consultaEmpresaUseCase, times(1)).buscarPorId(1L);
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/empresas/{id} deve retornar 400 Bad Request quando empresa não encontrada")
+    void deveRetornar400QuandoEmpresaNaoEncontradaEmBuscarPorId() throws Exception {
+        when(consultaEmpresaUseCase.buscarPorId(99L))
+                .thenThrow(new BusinessException("Empresa não encontrada."));
+
+        mockMvc.perform(get("/api/v1/empresas/{id}", 99L))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.code").value("BUSINESS_ERROR"))
+                .andExpect(jsonPath("$.message").value("Empresa não encontrada."));
+
+        verify(consultaEmpresaUseCase, times(1)).buscarPorId(99L);
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/empresas/{id} deve retornar 400 Bad Request quando empresa não pertence ao cliente logado")
+    void deveRetornar400QuandoEmpresaDeOutroClienteEmBuscarPorId() throws Exception {
+        when(consultaEmpresaUseCase.buscarPorId(10L))
+                .thenThrow(new BusinessException("A empresa não pertence ao seu cliente."));
+
+        mockMvc.perform(get("/api/v1/empresas/{id}", 10L))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.code").value("BUSINESS_ERROR"))
+                .andExpect(jsonPath("$.message").value("A empresa não pertence ao seu cliente."));
+
+        verify(consultaEmpresaUseCase, times(1)).buscarPorId(10L);
     }
 
     @Test
@@ -166,7 +281,7 @@ class EmpresaControllerTest {
     }
 
     @Test
-    @DisplayName("POST /api/v1/empresas deve retornar 200 OK quando empresa criada com sucesso")
+    @DisplayName("POST /api/v1/empresas deve retornar 200 OK quando empresa criada com sucesso contendo endereco")
     void deveSalvarNovaEmpresaComSucesso() throws Exception {
         Empresa empresaSalva = Empresa.builder()
                 .id(1L)
@@ -174,6 +289,15 @@ class EmpresaControllerTest {
                 .cnpj("12.345.678/0001-90")
                 .telefone("11999998888")
                 .status(Status.ATIVO)
+                .endereco(Endereco.builder()
+                        .id(50L)
+                        .cep("38400-000")
+                        .logradouro("Av. Principal")
+                        .numero("500")
+                        .bairro("Centro")
+                        .cidade("Uberlândia")
+                        .estado("MG")
+                        .build())
                 .departamentos(List.of(
                         Departamento.builder().id(10L).nome("TI").status(Status.ATIVO).build()
                 ))
@@ -193,6 +317,14 @@ class EmpresaControllerTest {
                     "cnpj": "12.345.678/0001-90",
                     "telefone": "11999998888",
                     "status": "ATIVO",
+                    "endereco": {
+                        "cep": "38400-000",
+                        "logradouro": "Av. Principal",
+                        "numero": "500",
+                        "bairro": "Centro",
+                        "cidade": "Uberlândia",
+                        "estado": "MG"
+                    },
                     "departamentos": [
                         { "nome": "TI", "status": "ATIVO" }
                     ],
@@ -212,6 +344,13 @@ class EmpresaControllerTest {
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.nome").value("Nova Empresa"))
                 .andExpect(jsonPath("$.cnpj").value("12.345.678/0001-90"))
+                .andExpect(jsonPath("$.endereco.id").value(50))
+                .andExpect(jsonPath("$.endereco.cep").value("38400-000"))
+                .andExpect(jsonPath("$.endereco.logradouro").value("Av. Principal"))
+                .andExpect(jsonPath("$.endereco.numero").value("500"))
+                .andExpect(jsonPath("$.endereco.bairro").value("Centro"))
+                .andExpect(jsonPath("$.endereco.cidade").value("Uberlândia"))
+                .andExpect(jsonPath("$.endereco.estado").value("MG"))
                 .andExpect(jsonPath("$.departamentos[0].id").value(10))
                 .andExpect(jsonPath("$.departamentos[0].nome").value("TI"))
                 .andExpect(jsonPath("$.centros[0].id").value(20))
@@ -250,6 +389,11 @@ class EmpresaControllerTest {
                 .cnpj("12.345.678/0001-90")
                 .celular("11988887777")
                 .status(Status.ATIVO)
+                .endereco(Endereco.builder()
+                        .id(50L)
+                        .logradouro("Rua Editada")
+                        .cidade("Uberlândia")
+                        .build())
                 .build();
 
         when(salvarEmpresaUseCase.execute(any(Empresa.class))).thenReturn(empresaSalva);
@@ -260,7 +404,11 @@ class EmpresaControllerTest {
                     "nome": "Empresa Atualizada",
                     "cnpj": "12.345.678/0001-90",
                     "celular": "11988887777",
-                    "status": "ATIVO"
+                    "status": "ATIVO",
+                    "endereco": {
+                        "logradouro": "Rua Editada",
+                        "cidade": "Uberlândia"
+                    }
                 }
                 """;
 
@@ -270,7 +418,9 @@ class EmpresaControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.nome").value("Empresa Atualizada"))
-                .andExpect(jsonPath("$.celular").value("11988887777"));
+                .andExpect(jsonPath("$.celular").value("11988887777"))
+                .andExpect(jsonPath("$.endereco.logradouro").value("Rua Editada"))
+                .andExpect(jsonPath("$.endereco.cidade").value("Uberlândia"));
 
         verify(salvarEmpresaUseCase, times(1)).execute(any(Empresa.class));
     }

@@ -4,11 +4,13 @@ import br.com.startjob.acesso.core.domain.empresa.Cargo;
 import br.com.startjob.acesso.core.domain.empresa.CentroCusto;
 import br.com.startjob.acesso.core.domain.empresa.Departamento;
 import br.com.startjob.acesso.core.domain.empresa.Empresa;
+import br.com.startjob.acesso.core.domain.endereco.Endereco;
 import br.com.startjob.acesso.core.gateway.EmpresaGateway;
 import br.com.startjob.acesso.dataprovider.entity.CargoEntity;
 import br.com.startjob.acesso.dataprovider.entity.CentroCustoEntity;
 import br.com.startjob.acesso.dataprovider.entity.DepartamentoEntity;
 import br.com.startjob.acesso.dataprovider.entity.EmpresaEntity;
+import br.com.startjob.acesso.dataprovider.entity.EnderecoEntity;
 import br.com.startjob.acesso.dataprovider.mapper.*;
 import br.com.startjob.acesso.dataprovider.repository.EmpresaRepository;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +35,7 @@ public class EmpresaGatewayImpl implements EmpresaGateway {
     private final DepartamentoMapper departamentoMapper;
     private final CentroCustoMapper centroCustoMapper;
     private final CargoMapper cargoMapper;
+    private final EnderecoMapper enderecoMapper;
 
     @Override
     @Transactional(readOnly = true)
@@ -45,7 +48,11 @@ public class EmpresaGatewayImpl implements EmpresaGateway {
     @Transactional(readOnly = true)
     public Optional<Empresa> findById(Long id) {
         return empresaRepository.findByIdWithCliente(id)
-                .map(entity -> empresaMapper.toDomain(entity, new CycleAvoidingMappingContext()));
+                .map(entity -> {
+                    var domain = empresaMapper.toDomain(entity, new CycleAvoidingMappingContext());
+                    filterActiveChildren(domain);
+                    return domain;
+                });
     }
 
     @Override
@@ -67,6 +74,8 @@ public class EmpresaGatewayImpl implements EmpresaGateway {
                 if (empresa.getCodEmpresaSenior() != null) existing.setCodEmpresaSenior(empresa.getCodEmpresaSenior());
                 if (empresa.getAutoAtendimentoLiberado() != null) existing.setAutoAtendimentoLiberado(empresa.getAutoAtendimentoLiberado());
 
+                syncEndereco(existing, empresa.getEndereco());
+
                 if (empresa.getDepartamentos() != null) {
                     syncDepartamentos(existing, empresa.getDepartamentos());
                 }
@@ -87,6 +96,13 @@ public class EmpresaGatewayImpl implements EmpresaGateway {
         }
 
         var entity = empresaMapper.toEntity(empresa, new CycleAvoidingMappingContext());
+        if (entity.getEndereco() != null) {
+            if (isEnderecoEmpty(empresa.getEndereco())) {
+                entity.setEndereco(null);
+            } else if (entity.getEndereco().getRemovido() == null) {
+                entity.getEndereco().setRemovido(false);
+            }
+        }
         if (entity.getDepartamentos() != null) {
             entity.getDepartamentos().forEach(d -> {
                 d.setEmpresa(entity);
@@ -229,8 +245,54 @@ public class EmpresaGatewayImpl implements EmpresaGateway {
         }
     }
 
+    private void syncEndereco(EmpresaEntity existing, Endereco incoming) {
+        if (incoming == null) {
+            existing.setEndereco(null);
+            return;
+        }
+
+        boolean isEmpty = isEnderecoEmpty(incoming);
+        if (isEmpty && existing.getEndereco() == null) {
+            return;
+        }
+
+        if (existing.getEndereco() != null) {
+            EnderecoEntity existingEnd = existing.getEndereco();
+            existingEnd.setCep(incoming.getCep());
+            existingEnd.setLogradouro(incoming.getLogradouro());
+            existingEnd.setNumero(incoming.getNumero());
+            existingEnd.setComplemento(incoming.getComplemento());
+            existingEnd.setBairro(incoming.getBairro());
+            existingEnd.setCidade(incoming.getCidade());
+            existingEnd.setEstado(incoming.getEstado());
+            if (incoming.getRemovido() != null) {
+                existingEnd.setRemovido(incoming.getRemovido());
+            }
+        } else {
+            EnderecoEntity newEnd = enderecoMapper.toEntity(incoming, new CycleAvoidingMappingContext());
+            if (newEnd.getRemovido() == null) {
+                newEnd.setRemovido(false);
+            }
+            existing.setEndereco(newEnd);
+        }
+    }
+
+    private boolean isEnderecoEmpty(Endereco endereco) {
+        if (endereco == null) return true;
+        return (endereco.getCep() == null || endereco.getCep().isBlank())
+                && (endereco.getLogradouro() == null || endereco.getLogradouro().isBlank())
+                && (endereco.getNumero() == null || endereco.getNumero().isBlank())
+                && (endereco.getComplemento() == null || endereco.getComplemento().isBlank())
+                && (endereco.getBairro() == null || endereco.getBairro().isBlank())
+                && (endereco.getCidade() == null || endereco.getCidade().isBlank())
+                && (endereco.getEstado() == null || endereco.getEstado().isBlank());
+    }
+
     private void filterActiveChildren(Empresa domain) {
         if (domain == null) return;
+        if (domain.getEndereco() != null && Boolean.TRUE.equals(domain.getEndereco().getRemovido())) {
+            domain.setEndereco(null);
+        }
         if (domain.getDepartamentos() != null) {
             domain.setDepartamentos(domain.getDepartamentos().stream()
                     .filter(d -> d.getRemovido() == null || !d.getRemovido())

@@ -2,6 +2,7 @@ package br.com.startjob.acesso.core.domain.empresa;
 
 import br.com.startjob.acesso.core.domain.BaseDomain;
 import br.com.startjob.acesso.core.domain.cliente.Cliente;
+import br.com.startjob.acesso.core.domain.endereco.Endereco;
 import br.com.startjob.acesso.core.enumeration.Status;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -41,6 +42,7 @@ public class Empresa extends BaseDomain {
     private Boolean autoAtendimentoLiberado;
 
     private Cliente cliente;
+    private Endereco endereco;
 
     @Builder.Default
     private List<Departamento> departamentos = new ArrayList<>();

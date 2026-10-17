@@ -2,6 +2,7 @@ package br.com.startjob.acesso.entrypoint.api.dto;
 
 import br.com.startjob.acesso.core.domain.empresa.Empresa;
 import br.com.startjob.acesso.core.enumeration.Status;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 
 import java.util.Collections;
@@ -19,11 +20,21 @@ public record EmpresaResponse(
         String codigoExterno,
         String codEmpresaSenior,
         Boolean autoAtendimentoLiberado,
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        EnderecoResponse endereco,
         List<DepartamentoResponse> departamentos,
         List<CentroCustoResponse> centros,
         List<CargoResponse> cargos
 ) {
     public static EmpresaResponse fromDomain(Empresa domain) {
+        return fromDomain(domain, true);
+    }
+
+    public static EmpresaResponse fromDomainSemEndereco(Empresa domain) {
+        return fromDomain(domain, false);
+    }
+
+    public static EmpresaResponse fromDomain(Empresa domain, boolean incluirEndereco) {
         if (domain == null) {
             return null;
         }
@@ -60,6 +71,7 @@ public record EmpresaResponse(
                 .codigoExterno(domain.getCodigoExterno())
                 .codEmpresaSenior(domain.getCodEmpresaSenior())
                 .autoAtendimentoLiberado(domain.getAutoAtendimentoLiberado())
+                .endereco(incluirEndereco ? EnderecoResponse.fromDomain(domain.getEndereco()) : null)
                 .departamentos(departamentos)
                 .centros(centros)
                 .cargos(cargos)
