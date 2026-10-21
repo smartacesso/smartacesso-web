@@ -1,8 +1,11 @@
 package br.com.startjob.acesso.entrypoint.api.controller;
 
+import br.com.startjob.acesso.core.domain.usuario.Usuario;
+import br.com.startjob.acesso.core.usecase.usuario.AlterarLoginSenhaUsuarioUseCase;
 import br.com.startjob.acesso.core.usecase.usuario.ConsultaUsuarioUseCase;
 import br.com.startjob.acesso.core.usecase.usuario.ExcluirUsuarioUseCase;
 import br.com.startjob.acesso.core.usecase.usuario.SalvarUsuarioUseCase;
+import br.com.startjob.acesso.entrypoint.api.dto.AlterarLoginSenhaRequest;
 import br.com.startjob.acesso.entrypoint.api.dto.PageResponse;
 import br.com.startjob.acesso.entrypoint.api.dto.UsuarioResponse;
 import br.com.startjob.acesso.entrypoint.api.dto.WebSalvarUsuarioRequest;
@@ -13,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -25,6 +29,7 @@ public class UsuarioController {
     private final ConsultaUsuarioUseCase consultaUsuarioUseCase;
     private final SalvarUsuarioUseCase salvarUsuarioUseCase;
     private final ExcluirUsuarioUseCase excluirUsuarioUseCase;
+    private final AlterarLoginSenhaUsuarioUseCase alterarLoginSenhaUsuarioUseCase;
 
     @Operation(summary = "Lista usuários paginados com filtro opcional por nome e cpf")
     @GetMapping
@@ -72,5 +77,24 @@ public class UsuarioController {
         excluirUsuarioUseCase.execute(id);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Altera o login e a senha de um usuário")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    @PutMapping("/{id}/login-senha")
+    public ResponseEntity<UsuarioResponse> alterarLoginSenha(
+            @PathVariable Long id,
+            @Valid @RequestBody AlterarLoginSenhaRequest request) {
+
+        log.info("Alterando login e senha do usuário - id: {}, login: {}", id, request.login());
+
+        Usuario usuarioAtualizado = alterarLoginSenhaUsuarioUseCase.execute(
+                id,
+                request.login(),
+                request.senha(),
+                request.confirmacaoSenha()
+        );
+
+        return ResponseEntity.ok(UsuarioResponse.fromDomain(usuarioAtualizado));
     }
 }

@@ -46,4 +46,12 @@ public interface UsuarioRepository extends JpaRepository<UsuarioEntity, Long> {
 
     @Query("select count(u) > 0 from UsuarioEntity u where u.login = :login and u.cliente.id = :idCliente and (u.removido = false or u.removido is null)")
     boolean existsByLoginAndCliente(@Param("login") String login, @Param("idCliente") Long idCliente);
+
+    @Query("""
+            select u from UsuarioEntity u
+            where u.login = :login
+              and u.cliente.id = :idCliente
+              and (u.removido = false or u.removido is null)
+            """)
+    Optional<UsuarioEntity> findByLoginAndCliente(@Param("login") String login, @Param("idCliente") Long idCliente);
 }

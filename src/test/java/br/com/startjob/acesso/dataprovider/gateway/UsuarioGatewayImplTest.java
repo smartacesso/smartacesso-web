@@ -214,4 +214,23 @@ class UsuarioGatewayImplTest {
         assertNull(existing.getEndereco());
         verify(usuarioRepository, times(1)).save(existing);
     }
+
+    @Test
+    @DisplayName("findByLoginAndCliente deve delegar ao repository e converter para domínio")
+    void deveBuscarPorLoginECliente() {
+        UsuarioEntity entity = new UsuarioEntity();
+        entity.setId(5L);
+        entity.setLogin("joao");
+
+        when(usuarioRepository.findByLoginAndCliente("joao", 10L)).thenReturn(Optional.of(entity));
+
+        Usuario domain = Usuario.builder().id(5L).login("joao").build();
+        when(usuarioMapper.toDomain(eq(entity), any())).thenReturn(domain);
+
+        Optional<Usuario> resultado = usuarioGateway.findByLoginAndCliente("joao", 10L);
+
+        assertTrue(resultado.isPresent());
+        assertEquals("joao", resultado.get().getLogin());
+        verify(usuarioRepository, times(1)).findByLoginAndCliente("joao", 10L);
+    }
 }

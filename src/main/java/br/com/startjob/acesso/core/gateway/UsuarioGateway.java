@@ -22,5 +22,7 @@ public interface UsuarioGateway {
     Usuario save(Usuario usuario);
 
     Optional<Usuario> findById(Long id);
+    
+    Optional<Usuario> findByLoginAndCliente(String login, Long idCliente);
 
 }

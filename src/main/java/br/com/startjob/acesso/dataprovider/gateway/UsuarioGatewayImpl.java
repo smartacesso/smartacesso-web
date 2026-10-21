@@ -177,4 +177,11 @@ public class UsuarioGatewayImpl implements UsuarioGateway {
         return usuarioRepository.findByIdWithCliente(id)
                 .map(entity -> usuarioMapper.toDomain(entity, new CycleAvoidingMappingContext()));
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Usuario> findByLoginAndCliente(String login, Long idCliente) {
+        return usuarioRepository.findByLoginAndCliente(login, idCliente)
+                .map(entity -> usuarioMapper.toDomain(entity, new CycleAvoidingMappingContext()));
+    }
 }

@@ -27,8 +27,11 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import br.com.startjob.acesso.core.usecase.usuario.AlterarLoginSenhaUsuarioUseCase;
 
 @ExtendWith(MockitoExtension.class)
 class UsuarioControllerTest {
@@ -41,6 +44,9 @@ class UsuarioControllerTest {
 
     @Mock
     private ExcluirUsuarioUseCase excluirUsuarioUseCase;
+
+    @Mock
+    private AlterarLoginSenhaUsuarioUseCase alterarLoginSenhaUsuarioUseCase;
 
     @InjectMocks
     private UsuarioController usuarioController;
@@ -267,5 +273,118 @@ class UsuarioControllerTest {
                 .andExpect(jsonPath("$.message").value("O usuário não pertence ao seu cliente."));
 
         verify(consultaUsuarioUseCase, times(1)).buscarPorId(100L);
+    }
+
+    @Test
+    @DisplayName("PUT /api/v1/usuarios/{id}/login-senha deve alterar login e senha com sucesso")
+    void deveAlterarLoginESenhaComSucesso() throws Exception {
+        var usuarioAtualizado = Usuario.builder()
+                .id(5L)
+                .nome("Usuario Editado")
+                .login("novo.login")
+                .perfil(PerfilAcesso.OPERADOR)
+                .status(Status.ATIVO)
+                .build();
+
+        when(alterarLoginSenhaUsuarioUseCase.execute(5L, "novo.login", "NovaSenha123", "NovaSenha123"))
+                .thenReturn(usuarioAtualizado);
+
+        String payload = """
+                {
+                    "login": "novo.login",
+                    "senha": "NovaSenha123",
+                    "confirmacaoSenha": "NovaSenha123"
+                }
+                """;
+
+        mockMvc.perform(put("/api/v1/usuarios/{id}/login-senha", 5L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(5))
+                .andExpect(jsonPath("$.login").value("novo.login"));
+
+        verify(alterarLoginSenhaUsuarioUseCase, times(1))
+                .execute(5L, "novo.login", "NovaSenha123", "NovaSenha123");
+    }
+
+    @Test
+    @DisplayName("PUT /api/v1/usuarios/{id}/login-senha deve funcionar também com alias de campos novoLogin e confirmarSenha")
+    void deveAlterarLoginESenhaComAliasDeCampos() throws Exception {
+        var usuarioAtualizado = Usuario.builder()
+                .id(5L)
+                .nome("Usuario Editado")
+                .login("novo.login.alias")
+                .perfil(PerfilAcesso.OPERADOR)
+                .status(Status.ATIVO)
+                .build();
+
+        when(alterarLoginSenhaUsuarioUseCase.execute(5L, "novo.login.alias", "NovaSenha123", "NovaSenha123"))
+                .thenReturn(usuarioAtualizado);
+
+        String payload = """
+                {
+                    "novoLogin": "novo.login.alias",
+                    "senha": "NovaSenha123",
+                    "confirmarSenha": "NovaSenha123"
+                }
+                """;
+
+        mockMvc.perform(put("/api/v1/usuarios/{id}/login-senha", 5L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(5))
+                .andExpect(jsonPath("$.login").value("novo.login.alias"));
+
+        verify(alterarLoginSenhaUsuarioUseCase, times(1))
+                .execute(5L, "novo.login.alias", "NovaSenha123", "NovaSenha123");
+    }
+
+    @Test
+    @DisplayName("PUT /api/v1/usuarios/{id}/login-senha deve retornar 400 Bad Request quando caso de uso lançar BusinessException")
+    void deveRetornar400QuandoBusinessExceptionEmAlterarLoginSenha() throws Exception {
+        when(alterarLoginSenhaUsuarioUseCase.execute(eq(5L), any(), any(), any()))
+                .thenThrow(new BusinessException("Login já cadastrado para outro usuário."));
+
+        String payload = """
+                {
+                    "login": "login.existente",
+                    "senha": "NovaSenha123",
+                    "confirmacaoSenha": "NovaSenha123"
+                }
+                """;
+
+        mockMvc.perform(put("/api/v1/usuarios/{id}/login-senha", 5L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.code").value("BUSINESS_ERROR"))
+                .andExpect(jsonPath("$.message").value("Login já cadastrado para outro usuário."));
+
+        verify(alterarLoginSenhaUsuarioUseCase, times(1))
+                .execute(5L, "login.existente", "NovaSenha123", "NovaSenha123");
+    }
+
+    @Test
+    @DisplayName("PUT /api/v1/usuarios/{id}/login-senha deve retornar 400 Bad Request quando corpo tiver campos em branco")
+    void deveRetornar400QuandoCamposObrigatoriosEmBranco() throws Exception {
+        String payload = """
+                {
+                    "login": "",
+                    "senha": "",
+                    "confirmacaoSenha": ""
+                }
+                """;
+
+        mockMvc.perform(put("/api/v1/usuarios/{id}/login-senha", 5L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+
+        verify(alterarLoginSenhaUsuarioUseCase, never()).execute(any(), any(), any(), any());
     }
 }
