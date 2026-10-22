@@ -25,4 +25,17 @@ public interface WebPerfilPermissaoRepository extends JpaRepository<WebPerfilPer
             """)
     List<WebPerfilPermissaoEntity> findByClienteAndPerfil(
             @Param("clienteId") Long clienteId, @Param("perfil") PerfilAcesso perfil);
+
+    @Query("""
+            select w from WebPerfilPermissaoEntity w
+            where w.cliente.id = :clienteId
+              and (w.removido = false or w.removido is null)
+            """)
+    List<WebPerfilPermissaoEntity> findByClienteAtivo(@Param("clienteId") Long clienteId);
+
+    @Query("""
+            select w from WebPerfilPermissaoEntity w
+            where w.cliente.id = :clienteId
+            """)
+    List<WebPerfilPermissaoEntity> findAllByCliente(@Param("clienteId") Long clienteId);
 }

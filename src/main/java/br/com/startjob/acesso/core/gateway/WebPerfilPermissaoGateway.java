@@ -4,11 +4,17 @@ import br.com.startjob.acesso.core.domain.permissao.WebPerfilPermissao;
 import br.com.startjob.acesso.core.enumeration.PerfilAcesso;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public interface WebPerfilPermissaoGateway {
 
     long countByClienteAtivo(Long clienteId);
 
     List<WebPerfilPermissao> findByClienteAndPerfil(Long clienteId, PerfilAcesso perfil);
+
+    List<WebPerfilPermissao> findByClienteAtivo(Long clienteId);
+
+    void salvarMatrizCliente(Long clienteId, Map<PerfilAcesso, Set<String>> permissoesHabilitadas);
 
 }

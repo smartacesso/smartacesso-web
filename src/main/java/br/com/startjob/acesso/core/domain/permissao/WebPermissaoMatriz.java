@@ -58,6 +58,7 @@ public final class WebPermissaoMatriz {
                 WebPermissao.PEDESTRE_VER, WebPermissao.PEDESTRE_EDITAR,
                 WebPermissao.VISITANTE_VER, WebPermissao.VISITANTE_EDITAR,
                 WebPermissao.CADASTRO_ERRO_VER,
+                WebPermissao.APROVACAO_LOGIN_APP_VER, WebPermissao.APROVACAO_LOGIN_APP_EDITAR,
                 WebPermissao.TOTEM_AUTO_VER,
                 WebPermissao.EMPRESA_VER, WebPermissao.EMPRESA_EDITAR,
                 WebPermissao.CORRESPONDENCIA_VER, WebPermissao.CORRESPONDENCIA_EDITAR,
@@ -100,11 +101,13 @@ public final class WebPermissaoMatriz {
                 WebPermissao.VISITANTE_VER, WebPermissao.VISITANTE_EDITAR, WebPermissao.VISITANTE_EXCLUIR,
                 WebPermissao.CADASTRO_ERRO_VER,
                 WebPermissao.APROVACAO_TOTEM_VER, WebPermissao.APROVACAO_TOTEM_EDITAR,
+                WebPermissao.APROVACAO_LOGIN_APP_VER, WebPermissao.APROVACAO_LOGIN_APP_EDITAR,
                 WebPermissao.CORRESPONDENCIA_VER, WebPermissao.CORRESPONDENCIA_EDITAR,
                 WebPermissao.AVISO_APP_VER, WebPermissao.AVISO_APP_EDITAR,
                 WebPermissao.TOTEM_AUTO_VER,
                 WebPermissao.ALTERACAO_MASSA_VER, WebPermissao.ALTERACAO_MASSA_EDITAR,
                 WebPermissao.USUARIO_VER, WebPermissao.USUARIO_EDITAR,
+                WebPermissao.ESTACAO_VER, WebPermissao.ESTACAO_EDITAR,
                 WebPermissao.EMPRESA_VER, WebPermissao.EMPRESA_EDITAR);
     }
 
