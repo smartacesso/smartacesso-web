@@ -58,7 +58,7 @@ class ConsultaMatrizPermissaoWebUseCaseTest {
         when(usuarioGateway.findLoggedUser()).thenReturn(Optional.of(usuarioAdmin));
         when(webPerfilPermissaoGateway.countByClienteAtivo(10L)).thenReturn(0L);
 
-        List<WebPermissaoLinha> linhas = consultaMatrizPermissaoWebUseCase.execute(false);
+        List<WebPermissaoLinha> linhas = consultaMatrizPermissaoWebUseCase.execute();
 
         assertNotNull(linhas);
         assertEquals(WebPermissao.values().length, linhas.size());
@@ -103,7 +103,7 @@ class ConsultaMatrizPermissaoWebUseCaseTest {
         when(webPerfilPermissaoGateway.findByClienteAtivo(10L))
                 .thenReturn(List.of(permAdmin, permPorteiro, permOperadorDesabilitado));
 
-        List<WebPermissaoLinha> linhas = consultaMatrizPermissaoWebUseCase.execute(false);
+        List<WebPermissaoLinha> linhas = consultaMatrizPermissaoWebUseCase.execute();
 
         WebPermissaoLinha pedestreVer = linhas.stream()
                 .filter(l -> l.getCodigo().equals(WebPermissao.PEDESTRE_VER.getCodigo()))
@@ -112,18 +112,6 @@ class ConsultaMatrizPermissaoWebUseCaseTest {
 
         assertTrue(pedestreVer.isPorteiro());
         assertFalse(pedestreVer.isOperador());
-    }
-
-    @Test
-    @DisplayName("Deve retornar matriz padrão quando parâmetro padrao=true mesmo se cliente tiver customização")
-    void deveRetornarMatrizPadraoQuandoSolicitadoExplicitamente() {
-        when(usuarioGateway.findLoggedUser()).thenReturn(Optional.of(usuarioAdmin));
-        when(webPerfilPermissaoGateway.countByClienteAtivo(10L)).thenReturn(0L);
-
-        List<WebPermissaoLinha> linhas = consultaMatrizPermissaoWebUseCase.execute(true);
-
-        assertEquals(WebPermissao.values().length, linhas.size());
-        verify(webPerfilPermissaoGateway, never()).findByClienteAtivo(anyLong());
     }
 
     @Test
@@ -140,7 +128,7 @@ class ConsultaMatrizPermissaoWebUseCaseTest {
         when(webPerfilPermissaoGateway.countByClienteAtivo(10L)).thenReturn(0L);
 
         BusinessException ex = assertThrows(BusinessException.class,
-                () -> consultaMatrizPermissaoWebUseCase.execute(false));
+                () -> consultaMatrizPermissaoWebUseCase.execute());
         assertEquals("Você não possui permissão para visualizar a matriz de permissões.", ex.getMessage());
     }
 }

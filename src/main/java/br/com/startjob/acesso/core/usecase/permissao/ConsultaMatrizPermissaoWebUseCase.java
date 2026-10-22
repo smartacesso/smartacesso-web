@@ -23,7 +23,7 @@ public class ConsultaMatrizPermissaoWebUseCase {
     private final WebPermissaoUseCase webPermissaoUseCase;
 
     @Transactional(readOnly = true)
-    public List<WebPermissaoLinha> execute(boolean padrao) {
+    public List<WebPermissaoLinha> execute() {
         Usuario usuarioLogado = usuarioGateway.findLoggedUser()
                 .orElseThrow(() -> new BusinessException("Usuário não está logado."));
 
@@ -37,9 +37,8 @@ public class ConsultaMatrizPermissaoWebUseCase {
             throw new BusinessException("Você não possui permissão para visualizar a matriz de permissões.");
         }
 
-        Map<PerfilAcesso, Set<String>> matriz = padrao
-                ? webPermissaoUseCase.carregarMatrizPadrao()
-                : webPermissaoUseCase.carregarMatrizEfetiva(usuarioLogado.getCliente().getId());
+        Map<PerfilAcesso, Set<String>> matriz = webPermissaoUseCase.carregarMatrizEfetiva(
+                usuarioLogado.getCliente().getId());
 
         return webPermissaoUseCase.montarLinhas(matriz);
     }
