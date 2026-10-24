@@ -22,5 +22,7 @@ public interface RegraGateway {
 
     Optional<Regra> findById(Long id);
 
+    Optional<Regra> findByNomeAndCliente(String nome, Long idCliente);
+
     Regra save(Regra regra);
 }

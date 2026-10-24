@@ -71,6 +71,20 @@ entrypoint/
 - Testes unitários apenas em casos específicos: regras de domínio complexas isoladas em `core/domain` ou lógica de `usecase` que valha a pena testar sem subir contexto Spring.
 - Testes de integração devem cobrir o fluxo completo: controller → usecase → gateway → banco.
 
+### Como compilar e executar testes no ambiente local (Windows / PowerShell)
+
+Sempre que implementar ou alterar código neste projeto, valide compilando e executando os testes com as seguintes regras:
+
+1. **JDK 25 obrigatório (`JAVA_HOME`)**: O `JAVA_HOME` padrão do terminal Windows pode apontar para uma JRE 8 sem compilador (`javac`). Sempre defina explicitamente `$env:JAVA_HOME="C:\Users\danie\.jdks\openjdk-25"` na mesma linha de comando antes de invocar o Maven Wrapper.
+2. **Usar `mvnw.cmd`**: Utilize o Maven Wrapper do projeto (`.\refactoring-project\smartacesso-web\mvnw.cmd` a partir da raiz do workspace `SmartPonto`, ou `.\mvnw.cmd` se já estiver dentro de `refactoring-project/smartacesso-web`).
+3. **Executar fora do sandbox (`BypassSandbox: true`)**: No Windows, o Maven precisa acessar `C:\Users\danie\.m2` e `C:\Users\danie\.jdks\openjdk-25` (que ficam fora do diretório do workspace). No sandbox padrão o comando trava ou falha sem acesso ao `.m2`/JDK, portanto execute comandos Maven com `BypassSandbox: true`.
+4. **Aspas em argumentos `-D` no PowerShell**: No PowerShell, argumentos do Maven contendo vírgulas ou pontos (como `-Dtest=ClasseA,ClasseB`) devem estar entre aspas duplas: `"-Dtest=ClasseATest,ClasseBTest"`.
+
+Exemplo de comando pronto (executado a partir de `c:\Users\danie\Documents\SmartPonto`):
+```powershell
+$env:JAVA_HOME="C:\Users\danie\.jdks\openjdk-25"; .\refactoring-project\smartacesso-web\mvnw.cmd test -f refactoring-project\smartacesso-web\pom.xml "-Dtest=NomeDoTeste"
+```
+
 ## Banco de dados e portabilidade
 
 - Usar JPA/Hibernate para abstrair o dialeto SQL; evitar `@Query` nativo sempre que possível — preferir JPQL/Criteria API.

@@ -15,5 +15,7 @@
              relativeToChangelogFile="true"/>
     <include file="changesets/005-usuario-endereco-schema.xml"
              relativeToChangelogFile="true"/>
+    <include file="changesets/006-pedestre-regras-schema.xml"
+             relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

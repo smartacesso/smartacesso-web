@@ -60,6 +60,14 @@ public class RegraGatewayImpl implements RegraGateway {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Optional<Regra> findByNomeAndCliente(String nome, Long idCliente) {
+        return regraRepository.findAllByNomeAndCliente(nome, idCliente).stream()
+                .findFirst()
+                .map(entity -> regraMapper.toDomain(entity, new CycleAvoidingMappingContext()));
+    }
+
+    @Override
     @Transactional
     public Regra save(Regra regra) {
         if (regra.getId() != null) {

@@ -9,12 +9,16 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface RegraRepository extends JpaRepository<RegraEntity, Long> {
 
     @Query("select distinct r from RegraEntity r left join fetch r.empresa left join fetch r.cliente left join fetch r.horarios where r.id = :id")
     Optional<RegraEntity> findByIdComplete(@Param("id") Long id);
+
+    @Query("select distinct r from RegraEntity r left join fetch r.empresa left join fetch r.cliente left join fetch r.horarios where r.cliente.id = :idCliente and lower(r.nome) = lower(:nome) and (r.removido = false or r.removido is null)")
+    List<RegraEntity> findAllByNomeAndCliente(@Param("nome") String nome, @Param("idCliente") Long idCliente);
 
     @Query("select r from RegraEntity r where r.id = :id and (r.removido = false or r.removido is null)")
     Optional<RegraEntity> findByIdActive(@Param("id") Long id);

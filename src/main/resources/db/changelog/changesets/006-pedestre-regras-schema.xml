@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    logicalFilePath="db/changelog/changesets/006-pedestre-regras-schema.xml"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.24.xsd">
+
+    <changeSet id="006-pedestre-regras-schema" author="antigravity">
+
+        <!-- ID Generator for RE_PEDESTRE_REGRA -->
+        <insert tableName="TB_ID_GENERATOR">
+            <column name="GEN_NAME" value="RE_PEDESTRE_REGRA"/>
+            <column name="GEN_VALUE" valueNumeric="0"/>
+        </insert>
+
+        <!-- Expand TB_PEDESTRE with registration fields -->
+        <addColumn tableName="TB_PEDESTRE">
+            <column name="EMAIL" type="VARCHAR(100)"/>
+            <column name="CPF" type="VARCHAR(20)"/>
+            <column name="RG" type="VARCHAR(20)"/>
+            <column name="TELEFONE" type="VARCHAR(20)"/>
+            <column name="CELULAR" type="VARCHAR(20)"/>
+            <column name="MATRICULA" type="VARCHAR(200)"/>
+            <column name="CARTAO_ACESSO" type="VARCHAR(50)"/>
+            <column name="OBSERVACOES" type="VARCHAR(300)"/>
+            <column name="TIPO_QRCODE" type="VARCHAR(100)"/>
+            <column name="QR_CODE_PARA_ACESSO" type="VARCHAR(100)"/>
+            <column name="SEMPRE_LIBERADO" type="BOOLEAN"/>
+            <column name="ACESSO_LIVRE" type="BOOLEAN"/>
+            <column name="HABILITAR_TECLADO" type="BOOLEAN"/>
+            <column name="CADASTRO_FACIAL_OBRIGATORIO" type="BOOLEAN"/>
+            <column name="FOTO" type="BLOB"/>
+            <column name="DATA_ALTERACAO_FOTO" type="DATETIME"/>
+            <column name="DATA_NASCIMENTO" type="DATE"/>
+            <column name="TIPO_PEDESTRE" type="VARCHAR(15)"/>
+            <column name="GENERO" type="VARCHAR(15)"/>
+            <column name="ENVIAR_SMS_AO_PASSAR_NA_CATRACA" type="BOOLEAN"/>
+            <column name="UUID_LOCAL" type="VARCHAR(255)"/>
+            <column name="ID_ENDERECO" type="BIGINT"/>
+            <column name="ID_EMPRESA" type="BIGINT"/>
+            <column name="ID_DEPARTAMENTO" type="BIGINT"/>
+            <column name="ID_CENTRO_CUSTO" type="BIGINT"/>
+            <column name="ID_CARGO" type="BIGINT"/>
+            <column name="EMPRESA_VISITADA" type="VARCHAR(200)"/>
+            <column name="ID_EMPRESA_VISITADA" type="BIGINT"/>
+            <column name="ID_USUARIO" type="BIGINT"/>
+            <column name="JUSTIFICATIVA_LIBERADO" type="VARCHAR(255)"/>
+            <column name="DATA_INICIO_PERIODO_AGENDAMENTO" type="DATETIME"/>
+            <column name="DATA_FIM_PERIODO_AGENDAMENTO" type="DATETIME"/>
+            <column name="AGENDAMENTO_LIBERADO" type="BOOLEAN"/>
+        </addColumn>
+
+        <!-- RE_PEDESTRE_REGRA -->
+        <createTable tableName="RE_PEDESTRE_REGRA">
+            <column name="ID_PEDESTRE_REGRA" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="DATA_CRIACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="DATA_ALTERACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VERSAO" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="REMOVIDO" type="CHAR(1)"/>
+            <column name="DATA_REMOVIDO" type="DATETIME"/>
+            <column name="UNIQUE_ID" type="VARCHAR(36)"/>
+
+            <column name="ID_REGRA" type="BIGINT"/>
+            <column name="ID_PEDESTRE" type="BIGINT"/>
+            <column name="VALIDADE" type="DATE"/>
+            <column name="QTDE_CREDITOS" type="BIGINT"/>
+            <column name="QTDE_TOTAL_CREDITOS" type="BIGINT"/>
+            <column name="DIAS_VALIDADE_CREDITO" type="BIGINT"/>
+            <column name="BLOQUEADO" type="BOOLEAN"/>
+            <column name="DATA_INICIO_PERIODO" type="DATE"/>
+            <column name="DATA_FIM_PERIODO" type="DATE"/>
+            <column name="DATA_INICIO_ESCALA_3_3" type="DATE"/>
+        </createTable>
+
+        <!-- Foreign Keys for TB_PEDESTRE -->
+        <addForeignKeyConstraint baseTableName="TB_PEDESTRE" baseColumnNames="ID_ENDERECO"
+                                 constraintName="FK_PEDESTRE_ENDERECO" referencedTableName="TB_ENDERECO" referencedColumnNames="ID_ENDERECO"/>
+        <addForeignKeyConstraint baseTableName="TB_PEDESTRE" baseColumnNames="ID_EMPRESA"
+                                 constraintName="FK_PEDESTRE_EMPRESA" referencedTableName="TB_EMPRESA" referencedColumnNames="ID_EMPRESA"/>
+        <addForeignKeyConstraint baseTableName="TB_PEDESTRE" baseColumnNames="ID_DEPARTAMENTO"
+                                 constraintName="FK_PEDESTRE_DEPARTAMENTO" referencedTableName="TB_DEPARTAMENTO" referencedColumnNames="ID_DEPARTAMENTO"/>
+        <addForeignKeyConstraint baseTableName="TB_PEDESTRE" baseColumnNames="ID_CENTRO_CUSTO"
+                                 constraintName="FK_PEDESTRE_CENTROCUSTO" referencedTableName="TB_CENTRO_CUSTO" referencedColumnNames="ID_CENTRO_CUSTO"/>
+        <addForeignKeyConstraint baseTableName="TB_PEDESTRE" baseColumnNames="ID_CARGO"
+                                 constraintName="FK_PEDESTRE_CARGO" referencedTableName="TB_CARGO" referencedColumnNames="ID_CARGO"/>
+        <addForeignKeyConstraint baseTableName="TB_PEDESTRE" baseColumnNames="ID_EMPRESA_VISITADA"
+                                 constraintName="FK_PEDESTRE_EMPRESAVISITADA" referencedTableName="TB_EMPRESA" referencedColumnNames="ID_EMPRESA"/>
+        <addForeignKeyConstraint baseTableName="TB_PEDESTRE" baseColumnNames="ID_USUARIO"
+                                 constraintName="FK_PEDESTRE_USUARIO" referencedTableName="TB_USUARIO" referencedColumnNames="ID_USUARIO"/>
+
+        <!-- Foreign Keys for RE_PEDESTRE_REGRA and TB_HORARIO -->
+        <addForeignKeyConstraint baseTableName="RE_PEDESTRE_REGRA" baseColumnNames="ID_REGRA"
+                                 constraintName="FK_PEDESTREREGRA_REGRA" referencedTableName="TB_REGRA" referencedColumnNames="ID_REGRA"/>
+        <addForeignKeyConstraint baseTableName="RE_PEDESTRE_REGRA" baseColumnNames="ID_PEDESTRE"
+                                 constraintName="FK_PEDESTREREGRA_PEDESTRE" referencedTableName="TB_PEDESTRE" referencedColumnNames="ID_PEDESTRE"/>
+        <addForeignKeyConstraint baseTableName="TB_HORARIO" baseColumnNames="ID_PEDESTRE_REGRA"
+                                 constraintName="FK_HORARIO_PEDESTREREGRA" referencedTableName="RE_PEDESTRE_REGRA" referencedColumnNames="ID_PEDESTRE_REGRA"/>
+
+    </changeSet>
+
+</databaseChangeLog>
