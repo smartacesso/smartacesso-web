@@ -37,6 +37,13 @@ public record PedestreRegraResponse(
                         .map(HorarioResponse::fromDomain)
                         .toList();
 
+        if (horarios.isEmpty() && domain.getRegra() != null && domain.getRegra().getHorarios() != null) {
+            horarios = domain.getRegra().getHorarios().stream()
+                    .filter(h -> h.getRemovido() == null || !h.getRemovido())
+                    .map(HorarioResponse::fromDomain)
+                    .toList();
+        }
+
         TipoRegra tipo = domain.getRegra() != null ? domain.getRegra().getTipo() : null;
 
         return PedestreRegraResponse.builder()

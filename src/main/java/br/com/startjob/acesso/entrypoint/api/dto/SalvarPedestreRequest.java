@@ -19,7 +19,6 @@ import jakarta.validation.constraints.Size;
 import lombok.Builder;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
@@ -51,11 +50,9 @@ public record SalvarPedestreRequest(
         @Size(max = 300, message = "Observações devem ter no máximo 300 caracteres")
         String observacoes,
         TipoQRCode tipoQRCode,
-        Integer qtdAcessoAntesSinc,
         LocalDate dataNascimento,
         Genero genero,
         Boolean sempreLiberado,
-        Boolean acessoLivre,
         Boolean habilitarTeclado,
         Boolean cadastroFacialObrigatorio,
         Boolean enviaSmsAoPassarNaCatraca,
@@ -73,10 +70,6 @@ public record SalvarPedestreRequest(
         String login,
         String senha,
         PerfilAcessoApp perfilApp,
-        String justificativa,
-        LocalDateTime dataInicioPeriodoAgendamento,
-        LocalDateTime dataFimPeriodoAgendamento,
-        Boolean agendamentoLiberado,
         @Valid
         SalvarEnderecoRequest endereco,
         List<@Valid SalvarPedestreRegraRequest> regras,
@@ -103,11 +96,9 @@ public record SalvarPedestreRequest(
                 .codigoCartaoAcesso(codigoCartaoAcesso)
                 .observacoes(observacoes)
                 .tipoQRCode(tipoQRCode)
-                .qtdAcessoAntesSinc(qtdAcessoAntesSinc)
                 .dataNascimento(dataNascimento)
                 .genero(genero)
                 .sempreLiberado(sempreLiberado)
-                .acessoLivre(acessoLivre)
                 .habilitarTeclado(habilitarTeclado)
                 .cadastroFacialObrigatorio(cadastroFacialObrigatorio)
                 .enviaSmsAoPassarNaCatraca(enviaSmsAoPassarNaCatraca)
@@ -122,10 +113,6 @@ public record SalvarPedestreRequest(
                 .login(login)
                 .senha(senha)
                 .perfilApp(perfilApp)
-                .justificativa(justificativa)
-                .dataInicioPeriodoAgendamento(dataInicioPeriodoAgendamento)
-                .dataFimPeriodoAgendamento(dataFimPeriodoAgendamento)
-                .agendamentoLiberado(agendamentoLiberado)
                 .endereco(endereco != null ? endereco.toDomain() : null)
                 .regras(regras == null
                         ? Collections.emptyList()

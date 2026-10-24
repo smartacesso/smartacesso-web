@@ -131,6 +131,24 @@ public class SalvarPedestreUseCase {
             if (pedestre.getTipoQRCode() == null) {
                 pedestre.setTipoQRCode(pedestreExistente.getTipoQRCode());
             }
+            if (pedestre.getAcessoLivre() == null) {
+                pedestre.setAcessoLivre(pedestreExistente.getAcessoLivre());
+            }
+            if (pedestre.getJustificativa() == null) {
+                pedestre.setJustificativa(pedestreExistente.getJustificativa());
+            }
+            if (pedestre.getDataInicioPeriodoAgendamento() == null) {
+                pedestre.setDataInicioPeriodoAgendamento(pedestreExistente.getDataInicioPeriodoAgendamento());
+            }
+            if (pedestre.getDataFimPeriodoAgendamento() == null) {
+                pedestre.setDataFimPeriodoAgendamento(pedestreExistente.getDataFimPeriodoAgendamento());
+            }
+            if (pedestre.getAgendamentoLiberado() == null) {
+                pedestre.setAgendamentoLiberado(pedestreExistente.getAgendamentoLiberado());
+            }
+            if (pedestre.getQtdAcessoAntesSinc() == null) {
+                pedestre.setQtdAcessoAntesSinc(pedestreExistente.getQtdAcessoAntesSinc());
+            }
         } else {
             pedestre.setCliente(usuarioLogado.getCliente());
             pedestre.setRemovido(false);

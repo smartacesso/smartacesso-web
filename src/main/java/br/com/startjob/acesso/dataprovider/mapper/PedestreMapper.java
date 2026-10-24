@@ -31,6 +31,8 @@ import org.mapstruct.Named;
 public interface PedestreMapper {
 
     @Mapping(target = "cliente", qualifiedByName = "clienteResumo")
+    @Mapping(target = "empresa", qualifiedByName = "empresaResumo")
+    @Mapping(target = "empresaVisitadaRef", qualifiedByName = "empresaResumo")
     @Mapping(target = "departamento", qualifiedByName = "departamentoSemEmpresa")
     @Mapping(target = "centroCusto", qualifiedByName = "centroCustoSemEmpresa")
     @Mapping(target = "cargo", qualifiedByName = "cargoSemEmpresa")

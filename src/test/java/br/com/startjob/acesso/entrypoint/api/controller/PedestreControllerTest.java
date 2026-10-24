@@ -12,10 +12,12 @@ import br.com.startjob.acesso.core.domain.pedestre.PedestreRegra;
 import br.com.startjob.acesso.core.domain.regra.Regra;
 import br.com.startjob.acesso.core.enumeration.Dedo;
 import br.com.startjob.acesso.core.enumeration.Genero;
+import br.com.startjob.acesso.core.enumeration.PerfilAcessoApp;
 import br.com.startjob.acesso.core.enumeration.Status;
 import br.com.startjob.acesso.core.enumeration.TipoPedestre;
 import br.com.startjob.acesso.core.enumeration.TipoRegra;
 import br.com.startjob.acesso.core.exception.BusinessException;
+import br.com.startjob.acesso.core.usecase.pedestre.ConsultaPedestreUseCase;
 import br.com.startjob.acesso.core.usecase.pedestre.SalvarPedestreUseCase;
 import br.com.startjob.acesso.entrypoint.api.handler.GlobalExceptionHandler;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,12 +37,16 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
 class PedestreControllerTest {
+
+    @Mock
+    private ConsultaPedestreUseCase consultaPedestreUseCase;
 
     @Mock
     private SalvarPedestreUseCase salvarPedestreUseCase;
@@ -58,6 +64,57 @@ class PedestreControllerTest {
     }
 
     @Test
+    @DisplayName("GET /api/v1/pedestres/{id} deve retornar 200 OK com os campos editáveis do pedestre e sem senha")
+    void deveBuscarPedestrePorIdComSucesso() throws Exception {
+        Pedestre pedestre = Pedestre.builder()
+                .id(10L)
+                .nome("João da Silva")
+                .status(Status.ATIVO)
+                .tipo(TipoPedestre.PEDESTRE)
+                .cpf("52998224725")
+                .genero(Genero.MASCULINO)
+                .dataNascimento(LocalDate.of(1992, 4, 15))
+                .login("joao.silva")
+                .senha("HASH_NAO_DEVE_SER_RETORNADO")
+                .perfilApp(PerfilAcessoApp.COMUM)
+                .empresa(Empresa.builder().id(100L).nome("Empresa ABC").build())
+                .build();
+
+        when(consultaPedestreUseCase.buscarPorId(10L)).thenReturn(pedestre);
+
+        mockMvc.perform(get("/api/v1/pedestres/10")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(10))
+                .andExpect(jsonPath("$.nome").value("João da Silva"))
+                .andExpect(jsonPath("$.status").value("ATIVO"))
+                .andExpect(jsonPath("$.tipo").value("PEDESTRE"))
+                .andExpect(jsonPath("$.cpf").value("52998224725"))
+                .andExpect(jsonPath("$.genero").value("MASCULINO"))
+                .andExpect(jsonPath("$.login").value("joao.silva"))
+                .andExpect(jsonPath("$.perfilApp").value("COMUM"))
+                .andExpect(jsonPath("$.idEmpresa").value(100))
+                .andExpect(jsonPath("$.nomeEmpresa").value("Empresa ABC"))
+                .andExpect(jsonPath("$.senha").doesNotExist());
+
+        verify(consultaPedestreUseCase, times(1)).buscarPorId(10L);
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/pedestres/{id} deve retornar 400 Bad Request quando pedestre pertencer a outro cliente")
+    void deveRetornar400QuandoBuscarPedestreDeOutroCliente() throws Exception {
+        when(consultaPedestreUseCase.buscarPorId(99L))
+                .thenThrow(new BusinessException("O pedestre não pertence ao seu cliente."));
+
+        mockMvc.perform(get("/api/v1/pedestres/99")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("O pedestre não pertence ao seu cliente."));
+
+        verify(consultaPedestreUseCase, times(1)).buscarPorId(99L);
+    }
+
+    @Test
     @DisplayName("POST /api/v1/pedestres deve retornar 200 OK ao salvar pedestre com todas as abas")
     void deveSalvarPedestreComSucesso() throws Exception {
         Pedestre salvo = Pedestre.builder()
@@ -66,7 +123,6 @@ class PedestreControllerTest {
                 .status(Status.ATIVO)
                 .tipo(TipoPedestre.PEDESTRE)
                 .cpf("52998224725")
-                .qtdAcessoAntesSinc(3)
                 .genero(Genero.MASCULINO)
                 .dataNascimento(LocalDate.of(1992, 4, 15))
                 .empresa(Empresa.builder().id(100L).nome("Empresa ABC").build())
@@ -132,7 +188,6 @@ class PedestreControllerTest {
                     "status": "ATIVO",
                     "tipo": "PEDESTRE",
                     "cpf": "529.982.247-25",
-                    "qtdAcessoAntesSinc": 3,
                     "genero": "MASCULINO",
                     "dataNascimento": "1992-04-15",
                     "idEmpresa": 100,
@@ -187,7 +242,6 @@ class PedestreControllerTest {
                 .andExpect(jsonPath("$.nome").value("João da Silva"))
                 .andExpect(jsonPath("$.tipo").value("PEDESTRE"))
                 .andExpect(jsonPath("$.cpf").value("52998224725"))
-                .andExpect(jsonPath("$.qtdAcessoAntesSinc").value(3))
                 .andExpect(jsonPath("$.genero").value("MASCULINO"))
                 .andExpect(jsonPath("$.generoDescricao").value("Masculino"))
                 .andExpect(jsonPath("$.idEmpresa").value(100))
@@ -205,7 +259,8 @@ class PedestreControllerTest {
                 .andExpect(jsonPath("$.cotas[0].id").value(700))
                 .andExpect(jsonPath("$.cotas[0].mesExtenso").value("Outubro"))
                 .andExpect(jsonPath("$.responsaveis[0].id").value(80))
-                .andExpect(jsonPath("$.responsaveis[0].nome").value("Responsável 1"));
+                .andExpect(jsonPath("$.responsaveis[0].nome").value("Responsável 1"))
+                .andExpect(jsonPath("$.senha").doesNotExist());
 
         verify(salvarPedestreUseCase).execute(any(Pedestre.class), eq(false));
     }

@@ -216,4 +216,35 @@ class PedestreGatewayImplTest {
         assertSame(existing, novaPrEntity.getPedestre());
         assertSame(regraRef, novaPrEntity.getRegra());
     }
+
+    @Test
+    @DisplayName("findById deve buscar com findByIdComplete e filtrar colecoes filhas removidas")
+    void deveBuscarPorIdFiltrandoFilhosRemovidos() {
+        PedestreEntity entity = new PedestreEntity();
+        entity.setId(77L);
+        when(pedestreRepository.findByIdComplete(77L)).thenReturn(Optional.of(entity));
+
+        PedestreRegra regraAtiva = PedestreRegra.builder().id(1L).removido(false).build();
+        PedestreRegra regraRemovida = PedestreRegra.builder().id(2L).removido(true).build();
+        Documento docAtivo = Documento.builder().id(10L).removido(false).build();
+        Documento docRemovido = Documento.builder().id(11L).removido(true).build();
+
+        Pedestre mapped = Pedestre.builder()
+                .id(77L)
+                .nome("Maria")
+                .regras(new ArrayList<>(List.of(regraAtiva, regraRemovida)))
+                .documentos(new ArrayList<>(List.of(docAtivo, docRemovido)))
+                .build();
+
+        when(pedestreMapper.toDomain(eq(entity), any(CycleAvoidingMappingContext.class))).thenReturn(mapped);
+
+        Optional<Pedestre> result = pedestreGateway.findById(77L);
+
+        assertTrue(result.isPresent());
+        assertEquals(1, result.get().getRegras().size());
+        assertEquals(1L, result.get().getRegras().getFirst().getId());
+        assertEquals(1, result.get().getDocumentos().size());
+        assertEquals(10L, result.get().getDocumentos().getFirst().getId());
+        verify(pedestreRepository).findByIdComplete(77L);
+    }
 }
