@@ -165,10 +165,56 @@ public class PedestreEntity extends BaseEntity {
     @Column(name = "AGENDAMENTO_LIBERADO")
     private Boolean agendamentoLiberado;
 
+    @Column(name = "QUANTIDADE_ACESSO_ANTES_SINC")
+    private Integer qtdAcessoAntesSinc;
+
     @BatchSize(size = 50)
     @SQLRestriction("removido = 'F' or removido is null")
     @OneToMany(mappedBy = "pedestre", cascade = CascadeType.ALL, orphanRemoval = false, fetch = FetchType.LAZY)
     private List<PedestreRegraEntity> regras = new ArrayList<>();
+
+    @BatchSize(size = 50)
+    @SQLRestriction("removido = 'F' or removido is null")
+    @OneToMany(mappedBy = "pedestre", cascade = CascadeType.ALL, orphanRemoval = false, fetch = FetchType.LAZY)
+    private List<PedestreEquipamentoEntity> equipamentos = new ArrayList<>();
+
+    @BatchSize(size = 50)
+    @SQLRestriction("removido = 'F' or removido is null")
+    @OneToMany(mappedBy = "pedestre", cascade = CascadeType.ALL, orphanRemoval = false, fetch = FetchType.LAZY)
+    private List<DocumentoEntity> documentos = new ArrayList<>();
+
+    @BatchSize(size = 50)
+    @SQLRestriction("removido = 'F' or removido is null")
+    @OneToMany(mappedBy = "pedestre", cascade = CascadeType.ALL, orphanRemoval = false, fetch = FetchType.LAZY)
+    private List<BiometriaEntity> biometrias = new ArrayList<>();
+
+    @BatchSize(size = 50)
+    @SQLRestriction("removido = 'F' or removido is null")
+    @OneToMany(mappedBy = "pedestre", cascade = CascadeType.ALL, orphanRemoval = false, fetch = FetchType.LAZY)
+    private List<MensagemEquipamentoEntity> mensagensPersonalizadas = new ArrayList<>();
+
+    @BatchSize(size = 50)
+    @SQLRestriction("removido = 'F' or removido is null")
+    @OneToMany(mappedBy = "pedestre", cascade = CascadeType.ALL, orphanRemoval = false, fetch = FetchType.LAZY)
+    private List<HistoricoCotaEntity> cotas = new ArrayList<>();
+
+    @BatchSize(size = 50)
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "PEDESTRE_RESPONSAVEL",
+            joinColumns = @JoinColumn(name = "ID_PEDESTRE"),
+            inverseJoinColumns = @JoinColumn(name = "ID_RESPONSAVEL")
+    )
+    private List<PedestreEntity> responsaveis = new ArrayList<>();
+
+    @BatchSize(size = 50)
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "PEDESTRE_RESPONSIBLE_ENTITY",
+            joinColumns = @JoinColumn(name = "ID_PEDESTRE"),
+            inverseJoinColumns = @JoinColumn(name = "ID_RESPONSIBLE")
+    )
+    private List<ResponsavelEntity> responsaveisEntidade = new ArrayList<>();
 
     public PedestreEntity(Long id, String login, String senha, PerfilAcessoApp perfilApp) {
         this.id = id;

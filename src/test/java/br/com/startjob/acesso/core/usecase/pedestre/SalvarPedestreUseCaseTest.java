@@ -6,12 +6,20 @@ import br.com.startjob.acesso.core.domain.empresa.CentroCusto;
 import br.com.startjob.acesso.core.domain.empresa.Departamento;
 import br.com.startjob.acesso.core.domain.empresa.Empresa;
 import br.com.startjob.acesso.core.domain.endereco.Endereco;
+import br.com.startjob.acesso.core.domain.equipamento.Equipamento;
 import br.com.startjob.acesso.core.domain.parametro.Parametro;
+import br.com.startjob.acesso.core.domain.pedestre.Biometria;
+import br.com.startjob.acesso.core.domain.pedestre.Documento;
+import br.com.startjob.acesso.core.domain.pedestre.HistoricoCota;
+import br.com.startjob.acesso.core.domain.pedestre.MensagemEquipamento;
 import br.com.startjob.acesso.core.domain.pedestre.Pedestre;
+import br.com.startjob.acesso.core.domain.pedestre.PedestreEquipamento;
 import br.com.startjob.acesso.core.domain.pedestre.PedestreRegra;
+import br.com.startjob.acesso.core.domain.pedestre.Responsavel;
 import br.com.startjob.acesso.core.domain.regra.Horario;
 import br.com.startjob.acesso.core.domain.regra.Regra;
 import br.com.startjob.acesso.core.domain.usuario.Usuario;
+import br.com.startjob.acesso.core.enumeration.Dedo;
 import br.com.startjob.acesso.core.enumeration.Genero;
 import br.com.startjob.acesso.core.enumeration.ParametroCatalogo;
 import br.com.startjob.acesso.core.enumeration.PerfilAcessoApp;
@@ -21,10 +29,12 @@ import br.com.startjob.acesso.core.enumeration.TipoRegra;
 import br.com.startjob.acesso.core.enumeration.WebPermissao;
 import br.com.startjob.acesso.core.exception.BusinessException;
 import br.com.startjob.acesso.core.gateway.EmpresaGateway;
+import br.com.startjob.acesso.core.gateway.EquipamentoGateway;
 import br.com.startjob.acesso.core.gateway.ParametroGateway;
 import br.com.startjob.acesso.core.gateway.PasswordGateway;
 import br.com.startjob.acesso.core.gateway.PedestreGateway;
 import br.com.startjob.acesso.core.gateway.RegraGateway;
+import br.com.startjob.acesso.core.gateway.ResponsavelGateway;
 import br.com.startjob.acesso.core.gateway.UsuarioGateway;
 import br.com.startjob.acesso.core.usecase.login.WebPermissaoUseCase;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,6 +66,12 @@ class SalvarPedestreUseCaseTest {
 
     @Mock
     private RegraGateway regraGateway;
+
+    @Mock
+    private EquipamentoGateway equipamentoGateway;
+
+    @Mock
+    private ResponsavelGateway responsavelGateway;
 
     @Mock
     private ParametroGateway parametroGateway;
@@ -228,6 +244,114 @@ class SalvarPedestreUseCaseTest {
         assertEquals(1, salvo.getRegras().size());
         assertEquals(900L, salvo.getRegras().get(0).getRegra().getId());
         assertEquals(1L, salvo.getRegras().get(0).getQtdeTotalDeCreditos());
+    }
+
+    @Test
+    @DisplayName("Deve processar equipamentos, documentos, biometrias, mensagens personalizadas, cotas e responsáveis")
+    void deveProcessarAbasComplementaresComSucesso() {
+        mockUsuarioAutorizadoPedestre();
+        when(parametroGateway.findAllByCliente(10L)).thenReturn(List.of());
+
+        Equipamento catraca = Equipamento.builder()
+                .id(30L)
+                .nome("Catraca Principal")
+                .modelo("Henry")
+                .cliente(cliente)
+                .removido(false)
+                .build();
+        when(equipamentoGateway.findById(30L)).thenReturn(Optional.of(catraca));
+
+        Pedestre responsavelPedestre = Pedestre.builder()
+                .id(80L)
+                .nome("Pai do Pedestre")
+                .cliente(cliente)
+                .removido(false)
+                .build();
+        when(pedestreGateway.findById(80L)).thenReturn(Optional.of(responsavelPedestre));
+
+        Responsavel responsavelEntidade = Responsavel.builder()
+                .id(90L)
+                .nome("Mãe do Pedestre")
+                .cliente(cliente)
+                .removido(false)
+                .build();
+        when(responsavelGateway.findById(90L)).thenReturn(Optional.of(responsavelEntidade));
+
+        when(pedestreGateway.save(any(Pedestre.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Pedestre pedestre = Pedestre.builder()
+                .nome("Lucas")
+                .tipo(TipoPedestre.PEDESTRE)
+                .qtdAcessoAntesSinc(5)
+                .equipamentos(List.of(PedestreEquipamento.builder()
+                        .equipamento(Equipamento.builder().id(30L).build())
+                        .validade(LocalDate.of(2027, 12, 31))
+                        .build()))
+                .documentos(List.of(Documento.builder()
+                        .nome("  Atestado Médico.pdf  ")
+                        .arquivo(new byte[]{10, 20, 30})
+                        .validade(LocalDate.of(2027, 6, 30))
+                        .build()))
+                .biometrias(List.of(
+                        Biometria.builder().dedo(Dedo.RIGHT_INDEX).template(new byte[]{1, 2}).build(),
+                        Biometria.builder().dedo(Dedo.LEFT_INDEX).template(new byte[]{3, 4}).build()
+                ))
+                .mensagensPersonalizadas(List.of(MensagemEquipamento.builder()
+                        .nome("  Boas-vindas  ")
+                        .mensagem("  Seja bem-vindo!  ")
+                        .quantidade(10L)
+                        .build()))
+                .cotas(List.of(HistoricoCota.builder()
+                        .mes(9)
+                        .ano(2026)
+                        .cotaMensal(22L)
+                        .build()))
+                .responsaveis(List.of(Pedestre.builder().id(80L).build()))
+                .responsaveisEntidade(List.of(Responsavel.builder().id(90L).build()))
+                .build();
+
+        Pedestre salvo = salvarPedestreUseCase.execute(pedestre);
+
+        assertEquals(5, salvo.getQtdAcessoAntesSinc());
+        assertEquals(1, salvo.getEquipamentos().size());
+        assertEquals("Catraca Principal", salvo.getEquipamentos().get(0).getEquipamento().getNome());
+        assertEquals(1, salvo.getDocumentos().size());
+        assertEquals("Atestado_Médico.pdf", salvo.getDocumentos().get(0).getNome());
+        assertEquals(2, salvo.getBiometrias().size());
+        assertEquals(1, salvo.getMensagensPersonalizadas().size());
+        assertEquals("Boas-vindas", salvo.getMensagensPersonalizadas().get(0).getNome());
+        assertEquals(Status.ATIVO, salvo.getMensagensPersonalizadas().get(0).getStatus());
+        assertEquals(1, salvo.getCotas().size());
+        assertEquals(22L, salvo.getCotas().get(0).getCotaMensal());
+        assertEquals(1, salvo.getResponsaveis().size());
+        assertEquals("Pai do Pedestre", salvo.getResponsaveis().get(0).getNome());
+        assertEquals(1, salvo.getResponsaveisEntidade().size());
+        assertEquals("Mãe do Pedestre", salvo.getResponsaveisEntidade().get(0).getNome());
+    }
+
+    @Test
+    @DisplayName("Deve impedir mais biometrias ativas que o configurado em LIMITE_DIGITAIS_PEDESTRE")
+    void deveImpedirMaisDeDuasBiometriasAtivas() {
+        mockUsuarioAutorizadoPedestre();
+        when(parametroGateway.findAllByCliente(10L)).thenReturn(List.of(
+                Parametro.builder()
+                        .nome(ParametroCatalogo.LIMITE_DIGITAIS_PEDESTRE.getNomePersistido())
+                        .valor("2")
+                        .build()
+        ));
+
+        Pedestre comTresBiometrias = Pedestre.builder()
+                .nome("João")
+                .biometrias(List.of(
+                        Biometria.builder().dedo(Dedo.RIGHT_INDEX).template(new byte[]{1}).build(),
+                        Biometria.builder().dedo(Dedo.LEFT_INDEX).template(new byte[]{2}).build(),
+                        Biometria.builder().dedo(Dedo.RIGHT_THUMB).template(new byte[]{3}).build()
+                ))
+                .build();
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> salvarPedestreUseCase.execute(comTresBiometrias));
+        assertEquals("Limite máximo de digitais excedido para o pedestre.", ex.getMessage());
     }
 
     @Test

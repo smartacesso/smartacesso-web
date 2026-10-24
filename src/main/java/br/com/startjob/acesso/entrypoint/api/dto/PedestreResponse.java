@@ -31,6 +31,7 @@ public record PedestreResponse(
         String observacoes,
         TipoQRCode tipoQRCode,
         String qrCodeParaAcesso,
+        Integer qtdAcessoAntesSinc,
         LocalDate dataNascimento,
         Genero genero,
         String generoDescricao,
@@ -62,7 +63,14 @@ public record PedestreResponse(
         Boolean agendamentoLiberado,
         @JsonInclude(JsonInclude.Include.NON_NULL)
         EnderecoResponse endereco,
-        List<PedestreRegraResponse> regras
+        List<PedestreRegraResponse> regras,
+        List<PedestreEquipamentoResponse> equipamentos,
+        List<DocumentoResponse> documentos,
+        List<BiometriaResponse> biometrias,
+        List<MensagemEquipamentoResponse> mensagensPersonalizadas,
+        List<HistoricoCotaResponse> cotas,
+        List<ResponsavelResumoResponse> responsaveis,
+        List<ResponsavelResumoResponse> responsaveisEntidade
 ) {
     public static PedestreResponse fromDomain(Pedestre domain) {
         if (domain == null) {
@@ -74,6 +82,53 @@ public record PedestreResponse(
                 : domain.getRegras().stream()
                         .filter(r -> r.getRemovido() == null || !r.getRemovido())
                         .map(PedestreRegraResponse::fromDomain)
+                        .toList();
+
+        List<PedestreEquipamentoResponse> equipamentos = domain.getEquipamentos() == null
+                ? Collections.emptyList()
+                : domain.getEquipamentos().stream()
+                        .filter(e -> e.getRemovido() == null || !e.getRemovido())
+                        .map(PedestreEquipamentoResponse::fromDomain)
+                        .toList();
+
+        List<DocumentoResponse> documentos = domain.getDocumentos() == null
+                ? Collections.emptyList()
+                : domain.getDocumentos().stream()
+                        .filter(d -> d.getRemovido() == null || !d.getRemovido())
+                        .map(DocumentoResponse::fromDomain)
+                        .toList();
+
+        List<BiometriaResponse> biometrias = domain.getBiometrias() == null
+                ? Collections.emptyList()
+                : domain.getBiometrias().stream()
+                        .filter(b -> b.getRemovido() == null || !b.getRemovido())
+                        .map(BiometriaResponse::fromDomain)
+                        .toList();
+
+        List<MensagemEquipamentoResponse> mensagensPersonalizadas = domain.getMensagensPersonalizadas() == null
+                ? Collections.emptyList()
+                : domain.getMensagensPersonalizadas().stream()
+                        .filter(m -> m.getRemovido() == null || !m.getRemovido())
+                        .map(MensagemEquipamentoResponse::fromDomain)
+                        .toList();
+
+        List<HistoricoCotaResponse> cotas = domain.getCotas() == null
+                ? Collections.emptyList()
+                : domain.getCotas().stream()
+                        .filter(c -> c.getRemovido() == null || !c.getRemovido())
+                        .map(HistoricoCotaResponse::fromDomain)
+                        .toList();
+
+        List<ResponsavelResumoResponse> responsaveis = domain.getResponsaveis() == null
+                ? Collections.emptyList()
+                : domain.getResponsaveis().stream()
+                        .map(ResponsavelResumoResponse::fromPedestre)
+                        .toList();
+
+        List<ResponsavelResumoResponse> responsaveisEntidade = domain.getResponsaveisEntidade() == null
+                ? Collections.emptyList()
+                : domain.getResponsaveisEntidade().stream()
+                        .map(ResponsavelResumoResponse::fromResponsavel)
                         .toList();
 
         String fotoBase64 = (domain.getFoto() != null && domain.getFoto().length > 0)
@@ -95,6 +150,7 @@ public record PedestreResponse(
                 .observacoes(domain.getObservacoes())
                 .tipoQRCode(domain.getTipoQRCode())
                 .qrCodeParaAcesso(domain.getQrCodeParaAcesso())
+                .qtdAcessoAntesSinc(domain.getQtdAcessoAntesSinc())
                 .dataNascimento(domain.getDataNascimento())
                 .genero(domain.getGenero())
                 .generoDescricao(domain.getGenero() != null ? domain.getGenero().getDescricao() : null)
@@ -125,6 +181,13 @@ public record PedestreResponse(
                 .agendamentoLiberado(domain.getAgendamentoLiberado())
                 .endereco(EnderecoResponse.fromDomain(domain.getEndereco()))
                 .regras(regras)
+                .equipamentos(equipamentos)
+                .documentos(documentos)
+                .biometrias(biometrias)
+                .mensagensPersonalizadas(mensagensPersonalizadas)
+                .cotas(cotas)
+                .responsaveis(responsaveis)
+                .responsaveisEntidade(responsaveisEntidade)
                 .build();
     }
 }

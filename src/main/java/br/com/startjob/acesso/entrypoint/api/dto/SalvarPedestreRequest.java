@@ -5,6 +5,7 @@ import br.com.startjob.acesso.core.domain.empresa.CentroCusto;
 import br.com.startjob.acesso.core.domain.empresa.Departamento;
 import br.com.startjob.acesso.core.domain.empresa.Empresa;
 import br.com.startjob.acesso.core.domain.pedestre.Pedestre;
+import br.com.startjob.acesso.core.domain.pedestre.Responsavel;
 import br.com.startjob.acesso.core.enumeration.Genero;
 import br.com.startjob.acesso.core.enumeration.PerfilAcessoApp;
 import br.com.startjob.acesso.core.enumeration.Status;
@@ -22,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 @Builder
 public record SalvarPedestreRequest(
@@ -49,6 +51,7 @@ public record SalvarPedestreRequest(
         @Size(max = 300, message = "Observações devem ter no máximo 300 caracteres")
         String observacoes,
         TipoQRCode tipoQRCode,
+        Integer qtdAcessoAntesSinc,
         LocalDate dataNascimento,
         Genero genero,
         Boolean sempreLiberado,
@@ -76,7 +79,14 @@ public record SalvarPedestreRequest(
         Boolean agendamentoLiberado,
         @Valid
         SalvarEnderecoRequest endereco,
-        List<@Valid SalvarPedestreRegraRequest> regras
+        List<@Valid SalvarPedestreRegraRequest> regras,
+        List<@Valid SalvarPedestreEquipamentoRequest> equipamentos,
+        List<@Valid SalvarDocumentoRequest> documentos,
+        List<@Valid SalvarBiometriaRequest> biometrias,
+        List<@Valid SalvarMensagemEquipamentoRequest> mensagensPersonalizadas,
+        List<@Valid SalvarHistoricoCotaRequest> cotas,
+        List<Long> idsResponsaveis,
+        List<Long> idsResponsaveisEntidade
 ) {
     public Pedestre toDomain() {
         return Pedestre.builder()
@@ -93,6 +103,7 @@ public record SalvarPedestreRequest(
                 .codigoCartaoAcesso(codigoCartaoAcesso)
                 .observacoes(observacoes)
                 .tipoQRCode(tipoQRCode)
+                .qtdAcessoAntesSinc(qtdAcessoAntesSinc)
                 .dataNascimento(dataNascimento)
                 .genero(genero)
                 .sempreLiberado(sempreLiberado)
@@ -119,6 +130,33 @@ public record SalvarPedestreRequest(
                 .regras(regras == null
                         ? Collections.emptyList()
                         : regras.stream().map(SalvarPedestreRegraRequest::toDomain).toList())
+                .equipamentos(equipamentos == null
+                        ? Collections.emptyList()
+                        : equipamentos.stream().map(SalvarPedestreEquipamentoRequest::toDomain).toList())
+                .documentos(documentos == null
+                        ? Collections.emptyList()
+                        : documentos.stream().map(SalvarDocumentoRequest::toDomain).toList())
+                .biometrias(biometrias == null
+                        ? Collections.emptyList()
+                        : biometrias.stream().map(SalvarBiometriaRequest::toDomain).toList())
+                .mensagensPersonalizadas(mensagensPersonalizadas == null
+                        ? Collections.emptyList()
+                        : mensagensPersonalizadas.stream().map(SalvarMensagemEquipamentoRequest::toDomain).toList())
+                .cotas(cotas == null
+                        ? Collections.emptyList()
+                        : cotas.stream().map(SalvarHistoricoCotaRequest::toDomain).toList())
+                .responsaveis(idsResponsaveis == null
+                        ? Collections.emptyList()
+                        : idsResponsaveis.stream()
+                                .filter(Objects::nonNull)
+                                .<Pedestre>map(idResp -> Pedestre.builder().id(idResp).build())
+                                .toList())
+                .responsaveisEntidade(idsResponsaveisEntidade == null
+                        ? Collections.emptyList()
+                        : idsResponsaveisEntidade.stream()
+                                .filter(Objects::nonNull)
+                                .<Responsavel>map(idResp -> Responsavel.builder().id(idResp).build())
+                                .toList())
                 .build();
     }
 

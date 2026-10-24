@@ -3,22 +3,30 @@ package br.com.startjob.acesso.dataprovider.gateway;
 import br.com.startjob.acesso.core.domain.cliente.Cliente;
 import br.com.startjob.acesso.core.domain.empresa.Empresa;
 import br.com.startjob.acesso.core.domain.endereco.Endereco;
+import br.com.startjob.acesso.core.domain.equipamento.Equipamento;
+import br.com.startjob.acesso.core.domain.pedestre.Documento;
 import br.com.startjob.acesso.core.domain.pedestre.Pedestre;
+import br.com.startjob.acesso.core.domain.pedestre.PedestreEquipamento;
 import br.com.startjob.acesso.core.domain.pedestre.PedestreRegra;
 import br.com.startjob.acesso.core.domain.regra.Regra;
 import br.com.startjob.acesso.core.enumeration.Status;
 import br.com.startjob.acesso.core.enumeration.TipoPedestre;
 import br.com.startjob.acesso.dataprovider.entity.ClienteEntity;
+import br.com.startjob.acesso.dataprovider.entity.DocumentoEntity;
 import br.com.startjob.acesso.dataprovider.entity.EmpresaEntity;
 import br.com.startjob.acesso.dataprovider.entity.EnderecoEntity;
+import br.com.startjob.acesso.dataprovider.entity.EquipamentoEntity;
 import br.com.startjob.acesso.dataprovider.entity.PedestreEntity;
+import br.com.startjob.acesso.dataprovider.entity.PedestreEquipamentoEntity;
 import br.com.startjob.acesso.dataprovider.entity.PedestreRegraEntity;
 import br.com.startjob.acesso.dataprovider.entity.RegraEntity;
 import br.com.startjob.acesso.dataprovider.mapper.*;
 import br.com.startjob.acesso.dataprovider.repository.ClienteRepository;
 import br.com.startjob.acesso.dataprovider.repository.EmpresaRepository;
+import br.com.startjob.acesso.dataprovider.repository.EquipamentoRepository;
 import br.com.startjob.acesso.dataprovider.repository.PedestreRepository;
 import br.com.startjob.acesso.dataprovider.repository.RegraRepository;
+import br.com.startjob.acesso.dataprovider.repository.ResponsavelRepository;
 import br.com.startjob.acesso.dataprovider.repository.UsuarioRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -50,9 +58,23 @@ class PedestreGatewayImplTest {
     @Mock
     private RegraRepository regraRepository;
     @Mock
+    private EquipamentoRepository equipamentoRepository;
+    @Mock
+    private ResponsavelRepository responsavelRepository;
+    @Mock
     private PedestreMapper pedestreMapper;
     @Mock
     private PedestreRegraMapper pedestreRegraMapper;
+    @Mock
+    private PedestreEquipamentoMapper pedestreEquipamentoMapper;
+    @Mock
+    private DocumentoMapper documentoMapper;
+    @Mock
+    private BiometriaMapper biometriaMapper;
+    @Mock
+    private MensagemEquipamentoMapper mensagemEquipamentoMapper;
+    @Mock
+    private HistoricoCotaMapper historicoCotaMapper;
     @Mock
     private EnderecoMapper enderecoMapper;
     @Mock
@@ -68,11 +90,14 @@ class PedestreGatewayImplTest {
     private PedestreGatewayImpl pedestreGateway;
 
     @Test
-    @DisplayName("save deve associar cliente, empresa e regras ao salvar novo PedestreEntity")
+    @DisplayName("save deve associar cliente, empresa, regras, equipamentos e documentos ao salvar novo PedestreEntity")
     void deveSalvarNovoPedestre() {
         Cliente cliente = Cliente.builder().id(10L).build();
         Empresa empresa = Empresa.builder().id(20L).build();
         Regra regra = Regra.builder().id(30L).build();
+        Equipamento equipamento = Equipamento.builder().id(40L).build();
+        Documento docDomain = Documento.builder().nome("Doc 1").build();
+        PedestreEquipamento peDomain = PedestreEquipamento.builder().equipamento(equipamento).build();
 
         Pedestre domainInput = Pedestre.builder()
                 .nome("Carlos")
@@ -82,6 +107,8 @@ class PedestreGatewayImplTest {
                 .empresa(empresa)
                 .endereco(Endereco.builder().cep("01001000").build())
                 .regras(List.of(PedestreRegra.builder().regra(regra).build()))
+                .equipamentos(List.of(peDomain))
+                .documentos(List.of(docDomain))
                 .build();
 
         PedestreEntity entityMapped = new PedestreEntity();
@@ -96,6 +123,19 @@ class PedestreGatewayImplTest {
         prEntity.setRegra(regraStub);
         entityMapped.setRegras(new ArrayList<>(List.of(prEntity)));
 
+        PedestreEquipamentoEntity peEntity = new PedestreEquipamentoEntity();
+        EquipamentoEntity eqStub = new EquipamentoEntity();
+        eqStub.setId(40L);
+        peEntity.setEquipamento(eqStub);
+        entityMapped.setEquipamentos(new ArrayList<>(List.of(peEntity)));
+
+        EquipamentoEntity eqRef = new EquipamentoEntity();
+        eqRef.setId(40L);
+
+        DocumentoEntity docEntity = new DocumentoEntity();
+        docEntity.setNome("Doc 1");
+        entityMapped.setDocumentos(new ArrayList<>(List.of(docEntity)));
+
         ClienteEntity clienteRef = new ClienteEntity();
         clienteRef.setId(10L);
         EmpresaEntity empresaRef = new EmpresaEntity();
@@ -107,6 +147,7 @@ class PedestreGatewayImplTest {
         when(clienteRepository.getReferenceById(10L)).thenReturn(clienteRef);
         when(empresaRepository.getReferenceById(20L)).thenReturn(empresaRef);
         when(regraRepository.getReferenceById(30L)).thenReturn(regraRef);
+        when(equipamentoRepository.getReferenceById(40L)).thenReturn(eqRef);
         when(pedestreRepository.save(entityMapped)).thenReturn(entityMapped);
 
         Pedestre domainReturned = Pedestre.builder().id(100L).nome("Carlos").build();
@@ -121,6 +162,10 @@ class PedestreGatewayImplTest {
         assertSame(entityMapped, prEntity.getPedestre());
         assertSame(regraRef, prEntity.getRegra());
         assertEquals(Boolean.FALSE, prEntity.getRemovido());
+        assertEquals(1, entityMapped.getEquipamentos().size());
+        assertSame(eqRef, peEntity.getEquipamento());
+        assertEquals(1, entityMapped.getDocumentos().size());
+        assertSame(entityMapped, docEntity.getPedestre());
         verify(pedestreRepository).save(entityMapped);
     }
 

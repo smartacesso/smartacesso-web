@@ -5,9 +5,9 @@ import br.com.startjob.acesso.core.domain.empresa.CentroCusto;
 import br.com.startjob.acesso.core.domain.empresa.Departamento;
 import br.com.startjob.acesso.core.domain.empresa.Empresa;
 import br.com.startjob.acesso.core.domain.endereco.Endereco;
+import br.com.startjob.acesso.core.domain.equipamento.Equipamento;
 import br.com.startjob.acesso.core.domain.parametro.Parametro;
-import br.com.startjob.acesso.core.domain.pedestre.Pedestre;
-import br.com.startjob.acesso.core.domain.pedestre.PedestreRegra;
+import br.com.startjob.acesso.core.domain.pedestre.*;
 import br.com.startjob.acesso.core.domain.regra.Horario;
 import br.com.startjob.acesso.core.domain.regra.Regra;
 import br.com.startjob.acesso.core.domain.usuario.Usuario;
@@ -17,12 +17,7 @@ import br.com.startjob.acesso.core.enumeration.TipoPedestre;
 import br.com.startjob.acesso.core.enumeration.TipoRegra;
 import br.com.startjob.acesso.core.enumeration.WebPermissao;
 import br.com.startjob.acesso.core.exception.BusinessException;
-import br.com.startjob.acesso.core.gateway.EmpresaGateway;
-import br.com.startjob.acesso.core.gateway.ParametroGateway;
-import br.com.startjob.acesso.core.gateway.PasswordGateway;
-import br.com.startjob.acesso.core.gateway.PedestreGateway;
-import br.com.startjob.acesso.core.gateway.RegraGateway;
-import br.com.startjob.acesso.core.gateway.UsuarioGateway;
+import br.com.startjob.acesso.core.gateway.*;
 import br.com.startjob.acesso.core.usecase.login.WebPermissaoUseCase;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,14 +32,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -57,6 +52,8 @@ public class SalvarPedestreUseCase {
     private final PedestreGateway pedestreGateway;
     private final EmpresaGateway empresaGateway;
     private final RegraGateway regraGateway;
+    private final EquipamentoGateway equipamentoGateway;
+    private final ResponsavelGateway responsavelGateway;
     private final ParametroGateway parametroGateway;
     private final UsuarioGateway usuarioGateway;
     private final WebPermissaoUseCase webPermissaoUseCase;
@@ -147,9 +144,15 @@ public class SalvarPedestreUseCase {
         tratarCartaoAcesso(pedestre, idClienteLogado, parametrosCliente);
         tratarAssociacoesPorTipo(pedestre, idClienteLogado, parametrosCliente);
         tratarEndereco(pedestre, pedestreExistente);
+        tratarResponsaveis(pedestre, idClienteLogado);
         validarCamposObrigatoriosDinamicos(pedestre, parametrosCliente);
         validarCpfEUnicidades(pedestre, idClienteLogado, parametrosCliente);
         tratarRegrasAcesso(pedestre, usuarioLogado);
+        tratarEquipamentos(pedestre, idClienteLogado);
+        tratarDocumentos(pedestre, pedestreExistente);
+        tratarBiometrias(pedestre, pedestreExistente, parametrosCliente);
+        tratarMensagensPersonalizadas(pedestre);
+        tratarCotas(pedestre, usuarioLogado);
         tratarAcessoApp(pedestre, pedestreExistente);
 
         Pedestre salvo = pedestreGateway.save(pedestre);
@@ -486,6 +489,53 @@ public class SalvarPedestreUseCase {
                 && (endereco.getEstado() == null || endereco.getEstado().isBlank());
     }
 
+    private void tratarResponsaveis(Pedestre pedestre, Long idClienteLogado) {
+        Map<Long, Pedestre> responsaveisMap = new LinkedHashMap<>();
+        if (pedestre.getResponsaveis() != null) {
+            for (Pedestre r : pedestre.getResponsaveis()) {
+                if (r == null || r.getId() == null) {
+                    continue;
+                }
+                if (pedestre.getId() != null && pedestre.getId().equals(r.getId())) {
+                    throw new BusinessException("O pedestre não pode ser responsável por si mesmo.");
+                }
+                if (!responsaveisMap.containsKey(r.getId())) {
+                    Pedestre encontrado = pedestreGateway.findById(r.getId())
+                            .orElseThrow(() -> new BusinessException("Responsável (pedestre) não encontrado."));
+                    if (Boolean.TRUE.equals(encontrado.getRemovido())) {
+                        throw new BusinessException("Responsável (pedestre) não encontrado.");
+                    }
+                    if (encontrado.getCliente() == null || !encontrado.getCliente().getId().equals(idClienteLogado)) {
+                        throw new BusinessException("O responsável selecionado não pertence ao seu cliente.");
+                    }
+                    responsaveisMap.put(encontrado.getId(), encontrado);
+                }
+            }
+        }
+        pedestre.setResponsaveis(new ArrayList<>(responsaveisMap.values()));
+
+        Map<Long, Responsavel> responsaveisEntidadeMap = new LinkedHashMap<>();
+        if (pedestre.getResponsaveisEntidade() != null) {
+            for (Responsavel re : pedestre.getResponsaveisEntidade()) {
+                if (re == null || re.getId() == null) {
+                    continue;
+                }
+                if (!responsaveisEntidadeMap.containsKey(re.getId())) {
+                    Responsavel encontrado = responsavelGateway.findById(re.getId())
+                            .orElseThrow(() -> new BusinessException("Responsável não encontrado."));
+                    if (Boolean.TRUE.equals(encontrado.getRemovido())) {
+                        throw new BusinessException("Responsável não encontrado.");
+                    }
+                    if (encontrado.getCliente() == null || !encontrado.getCliente().getId().equals(idClienteLogado)) {
+                        throw new BusinessException("O responsável selecionado não pertence ao seu cliente.");
+                    }
+                    responsaveisEntidadeMap.put(encontrado.getId(), encontrado);
+                }
+            }
+        }
+        pedestre.setResponsaveisEntidade(new ArrayList<>(responsaveisEntidadeMap.values()));
+    }
+
     private void validarCamposObrigatoriosDinamicos(
             Pedestre pedestre,
             Map<String, String> parametrosCliente
@@ -521,6 +571,13 @@ public class SalvarPedestreUseCase {
         }
         if (obrigatorios.contains("observacoes") && (pedestre.getObservacoes() == null || pedestre.getObservacoes().isBlank())) {
             throw new BusinessException("Observações são obrigatórias.");
+        }
+        if (obrigatorios.contains("responsavel")) {
+            boolean temResponsavelPedestre = pedestre.getResponsaveis() != null && !pedestre.getResponsaveis().isEmpty();
+            boolean temResponsavelEntidade = pedestre.getResponsaveisEntidade() != null && !pedestre.getResponsaveisEntidade().isEmpty();
+            if (!temResponsavelPedestre && !temResponsavelEntidade) {
+                throw new BusinessException("Responsável é obrigatório.");
+            }
         }
         if (obrigatorios.contains("empresa")) {
             if (pedestre.isVisitante()) {
@@ -763,6 +820,198 @@ public class SalvarPedestreUseCase {
                 .qtdeTotalDeCreditos(1L)
                 .removido(false)
                 .build();
+    }
+
+    private void tratarEquipamentos(Pedestre pedestre, Long idClienteLogado) {
+        if (pedestre.getEquipamentos() == null || pedestre.getEquipamentos().isEmpty()) {
+            pedestre.setEquipamentos(new ArrayList<>());
+            return;
+        }
+
+        List<PedestreEquipamento> lista = new ArrayList<>(pedestre.getEquipamentos());
+        for (PedestreEquipamento pe : lista) {
+            if (pe == null || Boolean.TRUE.equals(pe.getRemovido())) {
+                continue;
+            }
+            if (pe.getEquipamento() == null || pe.getEquipamento().getId() == null) {
+                throw new BusinessException("O equipamento é obrigatório.");
+            }
+            Equipamento equip = equipamentoGateway.findById(pe.getEquipamento().getId())
+                    .orElseThrow(() -> new BusinessException("Equipamento não encontrado."));
+            if (Boolean.TRUE.equals(equip.getRemovido())) {
+                throw new BusinessException("Equipamento não encontrado.");
+            }
+            if (equip.getCliente() == null || !equip.getCliente().getId().equals(idClienteLogado)) {
+                throw new BusinessException("O equipamento selecionado não pertence ao seu cliente.");
+            }
+            pe.setEquipamento(equip);
+            pe.setRemovido(false);
+        }
+        pedestre.setEquipamentos(lista);
+    }
+
+    private void tratarDocumentos(Pedestre pedestre, Pedestre pedestreExistente) {
+        if (pedestre.getDocumentos() == null || pedestre.getDocumentos().isEmpty()) {
+            pedestre.setDocumentos(new ArrayList<>());
+            return;
+        }
+
+        Map<Long, byte[]> arquivosExistentes = new HashMap<>();
+        if (pedestreExistente != null && pedestreExistente.getDocumentos() != null) {
+            for (Documento docExistente : pedestreExistente.getDocumentos()) {
+                if (docExistente != null && docExistente.getId() != null) {
+                    arquivosExistentes.put(docExistente.getId(), docExistente.getArquivo());
+                }
+            }
+        }
+
+        List<Documento> lista = new ArrayList<>(pedestre.getDocumentos());
+        for (Documento doc : lista) {
+            if (doc == null || Boolean.TRUE.equals(doc.getRemovido())) {
+                continue;
+            }
+            if (doc.getNome() == null || doc.getNome().isBlank()) {
+                throw new BusinessException("O nome do documento é obrigatório.");
+            }
+            String nomeNormalizado = doc.getNome().trim().replaceAll("\\s+", "_");
+            if (!isFormatoAceitoDocumento(nomeNormalizado)) {
+                throw new BusinessException("Formato de documento inválido. Formatos aceitos: .png, .jpeg, .jpg, .pdf.");
+            }
+            doc.setNome(nomeNormalizado);
+
+            if (doc.getArquivo() == null || doc.getArquivo().length == 0) {
+                if (doc.getId() != null && arquivosExistentes.containsKey(doc.getId())) {
+                    doc.setArquivo(arquivosExistentes.get(doc.getId()));
+                } else {
+                    throw new BusinessException("O arquivo do documento é obrigatório.");
+                }
+            }
+            doc.setRemovido(false);
+        }
+        pedestre.setDocumentos(lista);
+    }
+
+    public static boolean isFormatoAceitoDocumento(String nome) {
+        if (nome == null) {
+            return false;
+        }
+        String lower = nome.toLowerCase(Locale.ROOT);
+        return lower.endsWith(".png")
+                || lower.endsWith(".jpeg")
+                || lower.endsWith(".jpg")
+                || lower.endsWith(".pdf");
+    }
+
+    private void tratarBiometrias(
+            Pedestre pedestre,
+            Pedestre pedestreExistente,
+            Map<String, String> parametrosCliente
+    ) {
+        if (pedestre.getBiometrias() == null) {
+            if (pedestreExistente != null && pedestreExistente.getBiometrias() != null) {
+                pedestre.setBiometrias(new ArrayList<>(pedestreExistente.getBiometrias()));
+            } else {
+                pedestre.setBiometrias(new ArrayList<>());
+            }
+            return;
+        }
+
+        Map<Long, Biometria> existentesMap = new HashMap<>();
+        if (pedestreExistente != null && pedestreExistente.getBiometrias() != null) {
+            for (Biometria b : pedestreExistente.getBiometrias()) {
+                if (b != null && b.getId() != null) {
+                    existentesMap.put(b.getId(), b);
+                }
+            }
+        }
+
+        List<Biometria> lista = new ArrayList<>(pedestre.getBiometrias());
+        int ativasCount = 0;
+        for (Biometria bio : lista) {
+            if (bio == null || Boolean.TRUE.equals(bio.getRemovido())) {
+                continue;
+            }
+            if (bio.getDedo() == null) {
+                throw new BusinessException("O dedo da biometria é obrigatório.");
+            }
+            if (bio.getId() != null && existentesMap.containsKey(bio.getId())) {
+                Biometria existente = existentesMap.get(bio.getId());
+                if (bio.getTemplate() == null || bio.getTemplate().length == 0) {
+                    bio.setTemplate(existente.getTemplate());
+                }
+                if (bio.getSample() == null || bio.getSample().length == 0) {
+                    bio.setSample(existente.getSample());
+                }
+            }
+            bio.setRemovido(false);
+            ativasCount++;
+        }
+
+        String limiteStr = obterValorParametro(parametrosCliente, ParametroCatalogo.LIMITE_DIGITAIS_PEDESTRE);
+        if (limiteStr != null && !limiteStr.equalsIgnoreCase("Sem limite")) {
+            try {
+                int limite = Integer.parseInt(limiteStr.trim());
+                if (ativasCount > limite) {
+                    throw new BusinessException("Limite máximo de digitais excedido para o pedestre.");
+                }
+            } catch (NumberFormatException ignored) {
+                // "Sem limite"
+            }
+        }
+
+        pedestre.setBiometrias(lista);
+    }
+
+    private void tratarMensagensPersonalizadas(Pedestre pedestre) {
+        if (pedestre.getMensagensPersonalizadas() == null || pedestre.getMensagensPersonalizadas().isEmpty()) {
+            pedestre.setMensagensPersonalizadas(new ArrayList<>());
+            return;
+        }
+
+        List<MensagemEquipamento> lista = new ArrayList<>(pedestre.getMensagensPersonalizadas());
+        for (MensagemEquipamento msg : lista) {
+            if (msg == null || Boolean.TRUE.equals(msg.getRemovido())) {
+                continue;
+            }
+            if (msg.getMensagem() == null || msg.getMensagem().isBlank()) {
+                throw new BusinessException("O texto da mensagem personalizada é obrigatório.");
+            }
+            msg.setMensagem(msg.getMensagem().trim());
+            if (msg.getNome() != null) {
+                msg.setNome(msg.getNome().trim());
+            }
+            if (msg.getStatus() == null) {
+                msg.setStatus(Status.ATIVO);
+            }
+            msg.setRemovido(false);
+        }
+        pedestre.setMensagensPersonalizadas(lista);
+    }
+
+    private void tratarCotas(Pedestre pedestre, Usuario usuarioLogado) {
+        if (pedestre.getCotas() == null || pedestre.getCotas().isEmpty()) {
+            pedestre.setCotas(new ArrayList<>());
+            return;
+        }
+
+        List<HistoricoCota> lista = new ArrayList<>(pedestre.getCotas());
+        for (HistoricoCota cota : lista) {
+            if (cota == null || Boolean.TRUE.equals(cota.getRemovido())) {
+                continue;
+            }
+            if (cota.getMes() == null || cota.getMes() < 0 || cota.getMes() > 11) {
+                throw new BusinessException("Mês da cota inválido (deve ser entre 0 e 11).");
+            }
+            if (cota.getAno() == null || cota.getAno() < 1900) {
+                throw new BusinessException("Ano da cota inválido.");
+            }
+            if (cota.getCotaMensal() == null || cota.getCotaMensal() < 0) {
+                throw new BusinessException("O valor da cota mensal é obrigatório.");
+            }
+            cota.setCliente(usuarioLogado.getCliente());
+            cota.setRemovido(false);
+        }
+        pedestre.setCotas(lista);
     }
 
     private void tratarAcessoApp(Pedestre pedestre, Pedestre pedestreExistente) {

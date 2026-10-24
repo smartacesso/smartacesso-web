@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    logicalFilePath="db/changelog/changesets/007-pedestre-complementos-schema.xml"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.24.xsd">
+
+    <changeSet id="007-pedestre-complementos-schema" author="antigravity">
+
+        <!-- ID Generators -->
+        <insert tableName="TB_ID_GENERATOR">
+            <column name="GEN_NAME" value="TB_DOCUMENTO"/>
+            <column name="GEN_VALUE" valueNumeric="0"/>
+        </insert>
+        <insert tableName="TB_ID_GENERATOR">
+            <column name="GEN_NAME" value="TB_MENSAGEM_EQUIPAMENTO"/>
+            <column name="GEN_VALUE" valueNumeric="0"/>
+        </insert>
+        <insert tableName="TB_ID_GENERATOR">
+            <column name="GEN_NAME" value="TB_COTAS"/>
+            <column name="GEN_VALUE" valueNumeric="0"/>
+        </insert>
+        <insert tableName="TB_ID_GENERATOR">
+            <column name="GEN_NAME" value="TB_EQUIPAMENTO"/>
+            <column name="GEN_VALUE" valueNumeric="0"/>
+        </insert>
+        <insert tableName="TB_ID_GENERATOR">
+            <column name="GEN_NAME" value="RE_PEDESTRE_EQUIPAMENTO"/>
+            <column name="GEN_VALUE" valueNumeric="0"/>
+        </insert>
+        <insert tableName="TB_ID_GENERATOR">
+            <column name="GEN_NAME" value="TB_RESPONSIBLE"/>
+            <column name="GEN_VALUE" valueNumeric="0"/>
+        </insert>
+        <insert tableName="TB_ID_GENERATOR">
+            <column name="GEN_NAME" value="TB_BIOMETRIA"/>
+            <column name="GEN_VALUE" valueNumeric="0"/>
+        </insert>
+
+        <!-- Additional column on TB_PEDESTRE -->
+        <addColumn tableName="TB_PEDESTRE">
+            <column name="QUANTIDADE_ACESSO_ANTES_SINC" type="INT"/>
+        </addColumn>
+
+        <!-- TB_DOCUMENTO -->
+        <createTable tableName="TB_DOCUMENTO">
+            <column name="ID_DOCUMENTO" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="DATA_CRIACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="DATA_ALTERACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VERSAO" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="REMOVIDO" type="CHAR(1)"/>
+            <column name="DATA_REMOVIDO" type="DATETIME"/>
+            <column name="UNIQUE_ID" type="VARCHAR(36)"/>
+
+            <column name="NOME" type="VARCHAR(255)"/>
+            <column name="ARQUIVO" type="BLOB"/>
+            <column name="VALIDADE" type="DATE"/>
+            <column name="ID_PEDESTRE" type="BIGINT"/>
+        </createTable>
+
+        <!-- TB_MENSAGEM_EQUIPAMENTO -->
+        <createTable tableName="TB_MENSAGEM_EQUIPAMENTO">
+            <column name="ID_MENSAGEM_EQUIPAMENTO" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="DATA_CRIACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="DATA_ALTERACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VERSAO" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="REMOVIDO" type="CHAR(1)"/>
+            <column name="DATA_REMOVIDO" type="DATETIME"/>
+            <column name="UNIQUE_ID" type="VARCHAR(36)"/>
+
+            <column name="NOME" type="VARCHAR(255)"/>
+            <column name="STATUS" type="VARCHAR(100)"/>
+            <column name="MENSAGEM" type="VARCHAR(255)"/>
+            <column name="QUANTIDADE" type="BIGINT"/>
+            <column name="VALIDADE" type="DATE"/>
+            <column name="ID_PEDESTRE" type="BIGINT"/>
+        </createTable>
+
+        <!-- TB_COTAS -->
+        <createTable tableName="TB_COTAS">
+            <column name="ID_COTA" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="DATA_CRIACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="DATA_ALTERACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VERSAO" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="REMOVIDO" type="CHAR(1)"/>
+            <column name="DATA_REMOVIDO" type="DATETIME"/>
+            <column name="UNIQUE_ID" type="VARCHAR(36)"/>
+
+            <column name="MES" type="INT"/>
+            <column name="ANO" type="INT"/>
+            <column name="COTA_MENSAL" type="BIGINT"/>
+            <column name="PEDESTRE_ID" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ID_CLIENTE" type="BIGINT"/>
+        </createTable>
+
+        <!-- TB_EQUIPAMENTO -->
+        <createTable tableName="TB_EQUIPAMENTO">
+            <column name="ID_EQUIPAMENTO" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="DATA_CRIACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="DATA_ALTERACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VERSAO" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="REMOVIDO" type="CHAR(1)"/>
+            <column name="DATA_REMOVIDO" type="DATETIME"/>
+            <column name="UNIQUE_ID" type="VARCHAR(36)"/>
+
+            <column name="NOME" type="VARCHAR(255)"/>
+            <column name="IP" type="VARCHAR(255)"/>
+            <column name="IDENTIFICADOR" type="VARCHAR(255)"/>
+            <column name="MARCA" type="VARCHAR(255)"/>
+            <column name="MODELO" type="VARCHAR(255)"/>
+            <column name="LOCAL" type="VARCHAR(255)"/>
+            <column name="ID_CLIENTE" type="BIGINT"/>
+            <column name="ID_USUARIO" type="BIGINT"/>
+        </createTable>
+
+        <!-- RE_PEDESTRE_EQUIPAMENTO -->
+        <createTable tableName="RE_PEDESTRE_EQUIPAMENTO">
+            <column name="ID_PEDESTRE_EQUIPAMENTO" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="DATA_CRIACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="DATA_ALTERACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VERSAO" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="REMOVIDO" type="CHAR(1)"/>
+            <column name="DATA_REMOVIDO" type="DATETIME"/>
+            <column name="UNIQUE_ID" type="VARCHAR(36)"/>
+
+            <column name="ID_EQUIPAMENTO" type="BIGINT"/>
+            <column name="ID_PEDESTRE" type="BIGINT"/>
+            <column name="VALIDADE" type="DATE"/>
+        </createTable>
+
+        <!-- TB_RESPONSIBLE -->
+        <createTable tableName="TB_RESPONSIBLE">
+            <column name="ID_RESPONSIBLE" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="DATA_CRIACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="DATA_ALTERACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VERSAO" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="REMOVIDO" type="CHAR(1)"/>
+            <column name="DATA_REMOVIDO" type="DATETIME"/>
+            <column name="UNIQUE_ID" type="VARCHAR(36)"/>
+
+            <column name="NOME" type="VARCHAR(100)"/>
+            <column name="EMAIL" type="VARCHAR(100)"/>
+            <column name="CPF" type="VARCHAR(100)"/>
+            <column name="STATUS" type="VARCHAR(100)"/>
+            <column name="RG" type="VARCHAR(100)"/>
+            <column name="CELULAR" type="VARCHAR(100)"/>
+            <column name="DATA_NASCIMENTO" type="DATE"/>
+            <column name="LOGIN" type="VARCHAR(100)"/>
+            <column name="PASSWORD" type="VARCHAR(100)"/>
+            <column name="TOKEN" type="VARCHAR(100)"/>
+            <column name="DESCRICAO" type="VARCHAR(255)"/>
+            <column name="DEVICE_KEY" type="VARCHAR(255)"/>
+            <column name="ID_CLIENTE" type="BIGINT"/>
+        </createTable>
+
+        <!-- Join Table: PEDESTRE_RESPONSAVEL -->
+        <createTable tableName="PEDESTRE_RESPONSAVEL">
+            <column name="ID_PEDESTRE" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ID_RESPONSAVEL" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Join Table: PEDESTRE_RESPONSIBLE_ENTITY -->
+        <createTable tableName="PEDESTRE_RESPONSIBLE_ENTITY">
+            <column name="ID_PEDESTRE" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ID_RESPONSIBLE" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- TB_BIOMETRIA -->
+        <createTable tableName="TB_BIOMETRIA">
+            <column name="ID_BIOMETRIA" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="DATA_CRIACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="DATA_ALTERACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VERSAO" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="REMOVIDO" type="CHAR(1)"/>
+            <column name="DATA_REMOVIDO" type="DATETIME"/>
+            <column name="UNIQUE_ID" type="VARCHAR(36)"/>
+
+            <column name="ID_PEDESTRE" type="BIGINT"/>
+            <column name="DEDO" type="VARCHAR(50)"/>
+            <column name="TEMPLATE" type="BLOB"/>
+            <column name="SAMPLE" type="BLOB"/>
+        </createTable>
+
+        <!-- Foreign Keys -->
+        <addForeignKeyConstraint baseTableName="TB_DOCUMENTO" baseColumnNames="ID_PEDESTRE"
+                                 constraintName="FK_DOCUMENTO_PEDESTRE" referencedTableName="TB_PEDESTRE" referencedColumnNames="ID_PEDESTRE"/>
+        <addForeignKeyConstraint baseTableName="TB_MENSAGEM_EQUIPAMENTO" baseColumnNames="ID_PEDESTRE"
+                                 constraintName="FK_MSGEQUIP_PEDESTRE" referencedTableName="TB_PEDESTRE" referencedColumnNames="ID_PEDESTRE"/>
+        <addForeignKeyConstraint baseTableName="TB_COTAS" baseColumnNames="PEDESTRE_ID"
+                                 constraintName="FK_COTAS_PEDESTRE" referencedTableName="TB_PEDESTRE" referencedColumnNames="ID_PEDESTRE"/>
+        <addForeignKeyConstraint baseTableName="TB_COTAS" baseColumnNames="ID_CLIENTE"
+                                 constraintName="FK_COTAS_CLIENTE" referencedTableName="TB_CLIENTE" referencedColumnNames="ID_CLIENTE"/>
+        <addForeignKeyConstraint baseTableName="TB_EQUIPAMENTO" baseColumnNames="ID_CLIENTE"
+                                 constraintName="FK_EQUIPAMENTO_CLIENTE" referencedTableName="TB_CLIENTE" referencedColumnNames="ID_CLIENTE"/>
+        <addForeignKeyConstraint baseTableName="TB_EQUIPAMENTO" baseColumnNames="ID_USUARIO"
+                                 constraintName="FK_EQUIPAMENTO_USUARIO" referencedTableName="TB_USUARIO" referencedColumnNames="ID_USUARIO"/>
+        <addForeignKeyConstraint baseTableName="RE_PEDESTRE_EQUIPAMENTO" baseColumnNames="ID_EQUIPAMENTO"
+                                 constraintName="FK_PEDEQUIP_EQUIPAMENTO" referencedTableName="TB_EQUIPAMENTO" referencedColumnNames="ID_EQUIPAMENTO"/>
+        <addForeignKeyConstraint baseTableName="RE_PEDESTRE_EQUIPAMENTO" baseColumnNames="ID_PEDESTRE"
+                                 constraintName="FK_PEDEQUIP_PEDESTRE" referencedTableName="TB_PEDESTRE" referencedColumnNames="ID_PEDESTRE"/>
+        <addForeignKeyConstraint baseTableName="TB_RESPONSIBLE" baseColumnNames="ID_CLIENTE"
+                                 constraintName="FK_RESPONSIBLE_CLIENTE" referencedTableName="TB_CLIENTE" referencedColumnNames="ID_CLIENTE"/>
+        <addForeignKeyConstraint baseTableName="PEDESTRE_RESPONSAVEL" baseColumnNames="ID_PEDESTRE"
+                                 constraintName="FK_PEDRESP_PEDESTRE" referencedTableName="TB_PEDESTRE" referencedColumnNames="ID_PEDESTRE"/>
+        <addForeignKeyConstraint baseTableName="PEDESTRE_RESPONSAVEL" baseColumnNames="ID_RESPONSAVEL"
+                                 constraintName="FK_PEDRESP_RESPONSAVEL" referencedTableName="TB_PEDESTRE" referencedColumnNames="ID_PEDESTRE"/>
+        <addForeignKeyConstraint baseTableName="PEDESTRE_RESPONSIBLE_ENTITY" baseColumnNames="ID_PEDESTRE"
+                                 constraintName="FK_PEDRESPENT_PEDESTRE" referencedTableName="TB_PEDESTRE" referencedColumnNames="ID_PEDESTRE"/>
+        <addForeignKeyConstraint baseTableName="PEDESTRE_RESPONSIBLE_ENTITY" baseColumnNames="ID_RESPONSIBLE"
+                                 constraintName="FK_PEDRESPENT_RESPONSIBLE" referencedTableName="TB_RESPONSIBLE" referencedColumnNames="ID_RESPONSIBLE"/>
+        <addForeignKeyConstraint baseTableName="TB_BIOMETRIA" baseColumnNames="ID_PEDESTRE"
+                                 constraintName="FK_BIOMETRIA_PEDESTRE" referencedTableName="TB_PEDESTRE" referencedColumnNames="ID_PEDESTRE"/>
+
+    </changeSet>
+
+</databaseChangeLog>

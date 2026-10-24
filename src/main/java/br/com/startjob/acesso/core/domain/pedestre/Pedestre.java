@@ -20,7 +20,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@ToString(exclude = "foto")
+@ToString(exclude = {"foto", "responsaveis"})
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
@@ -68,7 +68,15 @@ public class Pedestre extends BaseDomain {
     private LocalDateTime dataInicioPeriodoAgendamento;
     private LocalDateTime dataFimPeriodoAgendamento;
     private Boolean agendamentoLiberado;
+    private Integer qtdAcessoAntesSinc;
     private List<PedestreRegra> regras;
+    private List<PedestreEquipamento> equipamentos;
+    private List<Documento> documentos;
+    private List<Biometria> biometrias;
+    private List<MensagemEquipamento> mensagensPersonalizadas;
+    private List<HistoricoCota> cotas;
+    private List<Pedestre> responsaveis;
+    private List<Responsavel> responsaveisEntidade;
 
     public boolean isVisitante() {
         return TipoPedestre.VISITANTE.equals(this.tipo);
