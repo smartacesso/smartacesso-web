@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ParametroRepository extends JpaRepository<ParametroEntity, Long> {
@@ -16,4 +17,12 @@ public interface ParametroRepository extends JpaRepository<ParametroEntity, Long
               and (p.removido = false or p.removido is null)
             """)
     Optional<ParametroEntity> findByClienteAndNome(@Param("clienteId") Long clienteId, @Param("nome") String nome);
+
+    @Query("""
+            select p from ParametroEntity p
+            where p.cliente.id = :clienteId
+              and (p.removido = false or p.removido is null)
+            order by p.id asc
+            """)
+    List<ParametroEntity> findAllByCliente(@Param("clienteId") Long clienteId);
 }
