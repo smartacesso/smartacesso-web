@@ -1,6 +1,7 @@
 package br.com.startjob.acesso.entrypoint.api.controller;
 
 import br.com.startjob.acesso.core.usecase.pedestre.ConsultaPedestreUseCase;
+import br.com.startjob.acesso.core.usecase.pedestre.ExcluirPedestreUseCase;
 import br.com.startjob.acesso.core.usecase.pedestre.SalvarPedestreUseCase;
 import br.com.startjob.acesso.entrypoint.api.dto.PedestreResponse;
 import br.com.startjob.acesso.entrypoint.api.dto.SalvarPedestreRequest;
@@ -10,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,6 +28,7 @@ public class PedestreController {
 
     private final ConsultaPedestreUseCase consultaPedestreUseCase;
     private final SalvarPedestreUseCase salvarPedestreUseCase;
+    private final ExcluirPedestreUseCase excluirPedestreUseCase;
 
     @Operation(summary = "Busca um pedestre ou visitante pelo identificador para edição")
     @GetMapping("/{id}")
@@ -49,5 +52,15 @@ public class PedestreController {
         var salvo = salvarPedestreUseCase.execute(request.toDomain(), removerFoto);
 
         return ResponseEntity.ok(PedestreResponse.fromDomain(salvo));
+    }
+
+    @Operation(summary = "Exclui um pedestre ou visitante")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> excluirPedestre(@PathVariable Long id) {
+        log.info("Excluindo pedestre/visitante - id: {}", id);
+
+        excluirPedestreUseCase.execute(id);
+
+        return ResponseEntity.noContent().build();
     }
 }

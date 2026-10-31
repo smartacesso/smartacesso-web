@@ -18,6 +18,7 @@ import br.com.startjob.acesso.core.enumeration.TipoPedestre;
 import br.com.startjob.acesso.core.enumeration.TipoRegra;
 import br.com.startjob.acesso.core.exception.BusinessException;
 import br.com.startjob.acesso.core.usecase.pedestre.ConsultaPedestreUseCase;
+import br.com.startjob.acesso.core.usecase.pedestre.ExcluirPedestreUseCase;
 import br.com.startjob.acesso.core.usecase.pedestre.SalvarPedestreUseCase;
 import br.com.startjob.acesso.entrypoint.api.handler.GlobalExceptionHandler;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,6 +38,7 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -50,6 +52,9 @@ class PedestreControllerTest {
 
     @Mock
     private SalvarPedestreUseCase salvarPedestreUseCase;
+
+    @Mock
+    private ExcluirPedestreUseCase excluirPedestreUseCase;
 
     @InjectMocks
     private PedestreController pedestreController;
@@ -302,5 +307,31 @@ class PedestreControllerTest {
                         .content(payload))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("CPF já cadastrado para outro pedestre."));
+    }
+
+    @Test
+    @DisplayName("DELETE /api/v1/pedestres/{id} deve retornar 204 No Content ao excluir pedestre com sucesso")
+    void deveExcluirPedestreComSucesso() throws Exception {
+        doNothing().when(excluirPedestreUseCase).execute(10L);
+
+        mockMvc.perform(delete("/api/v1/pedestres/10")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent());
+
+        verify(excluirPedestreUseCase, times(1)).execute(10L);
+    }
+
+    @Test
+    @DisplayName("DELETE /api/v1/pedestres/{id} deve retornar 400 Bad Request quando BusinessException for lançada")
+    void deveRetornar400QuandoErroAoExcluirPedestre() throws Exception {
+        doThrow(new BusinessException("Você não possui permissão para excluir pedestres."))
+                .when(excluirPedestreUseCase).execute(10L);
+
+        mockMvc.perform(delete("/api/v1/pedestres/10")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Você não possui permissão para excluir pedestres."));
+
+        verify(excluirPedestreUseCase, times(1)).execute(10L);
     }
 }
