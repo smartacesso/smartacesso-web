@@ -1,10 +1,16 @@
 package br.com.startjob.acesso.core.gateway;
 
 import br.com.startjob.acesso.core.domain.pedestre.Pedestre;
+import br.com.startjob.acesso.core.domain.pedestre.PedestreFiltro;
+import br.com.startjob.acesso.core.domain.pedestre.PedestreResumo;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.Optional;
 
 public interface PedestreGateway {
+
+    Page<PedestreResumo> buscarPedestres(Long idCliente, PedestreFiltro filtro, Pageable pageable);
 
     Optional<Pedestre> findByLoginOtimizado(String login, String unidade);
 

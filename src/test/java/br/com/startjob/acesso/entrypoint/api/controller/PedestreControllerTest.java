@@ -8,7 +8,9 @@ import br.com.startjob.acesso.core.domain.pedestre.HistoricoCota;
 import br.com.startjob.acesso.core.domain.pedestre.MensagemEquipamento;
 import br.com.startjob.acesso.core.domain.pedestre.Pedestre;
 import br.com.startjob.acesso.core.domain.pedestre.PedestreEquipamento;
+import br.com.startjob.acesso.core.domain.pedestre.PedestreFiltro;
 import br.com.startjob.acesso.core.domain.pedestre.PedestreRegra;
+import br.com.startjob.acesso.core.domain.pedestre.PedestreResumo;
 import br.com.startjob.acesso.core.domain.regra.Regra;
 import br.com.startjob.acesso.core.enumeration.Dedo;
 import br.com.startjob.acesso.core.enumeration.Genero;
@@ -25,9 +27,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -35,6 +42,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.time.LocalDate;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -65,7 +73,91 @@ class PedestreControllerTest {
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(pedestreController)
                 .setControllerAdvice(new GlobalExceptionHandler())
+                .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
                 .build();
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/pedestres deve retornar 200 OK com lista paginada otimizada e todos os filtros aplicados")
+    void deveBuscarPedestresPaginadosComFiltros() throws Exception {
+        PedestreResumo resumo = PedestreResumo.builder()
+                .id(10L)
+                .matricula("MAT-01")
+                .codigoCartaoAcesso("987654")
+                .nome("João da Silva")
+                .telefone("1133334444")
+                .celular("11999998888")
+                .cpf("52998224725")
+                .rg("1234567")
+                .tipo(TipoPedestre.PEDESTRE)
+                .status(Status.ATIVO)
+                .nomeEmpresa("Empresa ABC")
+                .nomeDepartamento("Engenharia")
+                .nomeCentroCusto("CC-10")
+                .nomeCargo("Desenvolvedor")
+                .nomeRegraAtiva("Horário Comercial")
+                .possuiFoto(true)
+                .build();
+
+        Page<PedestreResumo> page = new PageImpl<>(List.of(resumo), PageRequest.of(0, 10), 1);
+        when(consultaPedestreUseCase.execute(any(PedestreFiltro.class), any())).thenReturn(page);
+
+        mockMvc.perform(get("/api/v1/pedestres")
+                        .param("matricula", "MAT-01")
+                        .param("codigoCartaoAcesso", "987654")
+                        .param("nome", "João")
+                        .param("contato", "1199999")
+                        .param("cpf", "52998224725")
+                        .param("rg", "1234567")
+                        .param("tipo", "PEDESTRE")
+                        .param("idEmpresa", "100")
+                        .param("idDepartamento", "200")
+                        .param("idCentroCusto", "300")
+                        .param("idCargo", "400")
+                        .param("uuidLocal", "local-uuid-1")
+                        .param("status", "ATIVO")
+                        .param("possuiFoto", "true")
+                        .param("page", "0")
+                        .param("size", "10")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].id").value(10))
+                .andExpect(jsonPath("$.content[0].matricula").value("MAT-01"))
+                .andExpect(jsonPath("$.content[0].codigoCartaoAcesso").value("987654"))
+                .andExpect(jsonPath("$.content[0].nome").value("João da Silva"))
+                .andExpect(jsonPath("$.content[0].telefone").value("1133334444"))
+                .andExpect(jsonPath("$.content[0].celular").value("11999998888"))
+                .andExpect(jsonPath("$.content[0].cpf").value("52998224725"))
+                .andExpect(jsonPath("$.content[0].rg").value("1234567"))
+                .andExpect(jsonPath("$.content[0].tipo").value("PEDESTRE"))
+                .andExpect(jsonPath("$.content[0].status").value("ATIVO"))
+                .andExpect(jsonPath("$.content[0].nomeEmpresa").value("Empresa ABC"))
+                .andExpect(jsonPath("$.content[0].nomeDepartamento").value("Engenharia"))
+                .andExpect(jsonPath("$.content[0].nomeCentroCusto").value("CC-10"))
+                .andExpect(jsonPath("$.content[0].nomeCargo").value("Desenvolvedor"))
+                .andExpect(jsonPath("$.content[0].nomeRegraAtiva").value("Horário Comercial"))
+                .andExpect(jsonPath("$.content[0].possuiFoto").value(true))
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.totalPages").value(1));
+
+        ArgumentCaptor<PedestreFiltro> filtroCaptor = ArgumentCaptor.forClass(PedestreFiltro.class);
+        verify(consultaPedestreUseCase).execute(filtroCaptor.capture(), any());
+
+        PedestreFiltro f = filtroCaptor.getValue();
+        assertEquals("MAT-01", f.getMatricula());
+        assertEquals("987654", f.getCodigoCartaoAcesso());
+        assertEquals("João", f.getNome());
+        assertEquals("1199999", f.getContato());
+        assertEquals("52998224725", f.getCpf());
+        assertEquals("1234567", f.getRg());
+        assertEquals(TipoPedestre.PEDESTRE, f.getTipo());
+        assertEquals(100L, f.getIdEmpresa());
+        assertEquals(200L, f.getIdDepartamento());
+        assertEquals(300L, f.getIdCentroCusto());
+        assertEquals(400L, f.getIdCargo());
+        assertEquals("local-uuid-1", f.getUuidLocal());
+        assertEquals(Status.ATIVO, f.getStatus());
+        assertEquals(Boolean.TRUE, f.getPossuiFoto());
     }
 
     @Test

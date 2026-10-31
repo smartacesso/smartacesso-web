@@ -7,7 +7,9 @@ import br.com.startjob.acesso.core.domain.equipamento.Equipamento;
 import br.com.startjob.acesso.core.domain.pedestre.Documento;
 import br.com.startjob.acesso.core.domain.pedestre.Pedestre;
 import br.com.startjob.acesso.core.domain.pedestre.PedestreEquipamento;
+import br.com.startjob.acesso.core.domain.pedestre.PedestreFiltro;
 import br.com.startjob.acesso.core.domain.pedestre.PedestreRegra;
+import br.com.startjob.acesso.core.domain.pedestre.PedestreResumo;
 import br.com.startjob.acesso.core.domain.regra.Regra;
 import br.com.startjob.acesso.core.enumeration.Status;
 import br.com.startjob.acesso.core.enumeration.TipoPedestre;
@@ -34,6 +36,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -246,5 +253,52 @@ class PedestreGatewayImplTest {
         assertEquals(1, result.get().getDocumentos().size());
         assertEquals(10L, result.get().getDocumentos().getFirst().getId());
         verify(pedestreRepository).findByIdComplete(77L);
+    }
+
+    @Test
+    @DisplayName("buscarPedestres deve consultar repositório otimizado e preencher primeira regra ativa em lote")
+    void deveBuscarPedestresPreenchendoRegraAtivaEmLote() {
+        Long idCliente = 10L;
+        PedestreFiltro filtro = PedestreFiltro.builder()
+                .nome("João")
+                .tipo(TipoPedestre.PEDESTRE)
+                .status(Status.ATIVO)
+                .possuiFoto(true)
+                .build();
+
+        PedestreResumo p1 = new PedestreResumo(
+                100L, "MAT1", "CARD1", "João Silva", "1133334444", "11999998888",
+                "12345678909", "MG1", TipoPedestre.PEDESTRE, Status.ATIVO,
+                "Empresa A", "TI", "CC-01", "Analista", true
+        );
+        PedestreResumo p2 = new PedestreResumo(
+                101L, "MAT2", "CARD2", "João Souza", null, null,
+                "98765432100", null, TipoPedestre.PEDESTRE, Status.ATIVO,
+                "Empresa A", "RH", "CC-02", "Gerente", true
+        );
+
+        Pageable pageableSemSort = PageRequest.of(0, 10);
+        Pageable pageableEsperado = PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "id"));
+
+        when(pedestreRepository.buscarPedestresOtimizado(
+                eq(idCliente), isNull(), isNull(), eq("João"), isNull(), isNull(), isNull(),
+                eq(TipoPedestre.PEDESTRE), isNull(), isNull(), isNull(), isNull(), isNull(),
+                eq(Status.ATIVO), eq(true), eq(pageableEsperado)
+        )).thenReturn(new PageImpl<>(List.of(p1, p2), pageableEsperado, 2));
+
+        List<Object[]> regrasRows = List.of(
+                new Object[]{100L, "Regra Principal"},
+                new Object[]{100L, "Regra Secundária"}
+        );
+        when(pedestreRepository.findNomesRegrasAtivasByPedestreIds(List.of(100L, 101L)))
+                .thenReturn(regrasRows);
+
+        Page<PedestreResumo> resultado = pedestreGateway.buscarPedestres(idCliente, filtro, pageableSemSort);
+
+        assertNotNull(resultado);
+        assertEquals(2, resultado.getTotalElements());
+        assertEquals("Regra Principal", resultado.getContent().get(0).getNomeRegraAtiva());
+        assertNull(resultado.getContent().get(1).getNomeRegraAtiva());
+        verify(pedestreRepository).findNomesRegrasAtivasByPedestreIds(List.of(100L, 101L));
     }
 }

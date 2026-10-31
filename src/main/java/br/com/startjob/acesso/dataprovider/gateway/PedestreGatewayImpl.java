@@ -8,13 +8,18 @@ import br.com.startjob.acesso.dataprovider.entity.*;
 import br.com.startjob.acesso.dataprovider.mapper.*;
 import br.com.startjob.acesso.dataprovider.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -43,6 +48,58 @@ public class PedestreGatewayImpl implements PedestreGateway {
     private final CentroCustoMapper centroCustoMapper;
     private final CargoMapper cargoMapper;
     private final HorarioMapper horarioMapper;
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<PedestreResumo> buscarPedestres(Long idCliente, PedestreFiltro filtro, Pageable pageable) {
+        PedestreFiltro f = filtro != null ? filtro : new PedestreFiltro();
+        Pageable effectivePageable = (pageable == null || pageable.isUnpaged())
+                ? pageable
+                : pageable.getSort().isUnsorted()
+                        ? PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Sort.Direction.ASC, "id"))
+                        : pageable;
+
+        Page<PedestreResumo> page = pedestreRepository.buscarPedestresOtimizado(
+                idCliente,
+                f.getMatricula(),
+                f.getCodigoCartaoAcesso(),
+                f.getNome(),
+                f.getContato(),
+                f.getCpf(),
+                f.getRg(),
+                f.getTipo(),
+                f.getIdEmpresa(),
+                f.getIdDepartamento(),
+                f.getIdCentroCusto(),
+                f.getIdCargo(),
+                f.getUuidLocal(),
+                f.getStatus(),
+                f.getPossuiFoto(),
+                effectivePageable
+        );
+
+        List<Long> idsPedestres = page.getContent().stream()
+                .map(PedestreResumo::getId)
+                .filter(Objects::nonNull)
+                .toList();
+
+        if (!idsPedestres.isEmpty()) {
+            List<Object[]> regrasAtivas = pedestreRepository.findNomesRegrasAtivasByPedestreIds(idsPedestres);
+            if (regrasAtivas != null && !regrasAtivas.isEmpty()) {
+                Map<Long, String> mapaRegraPorPedestre = new HashMap<>();
+                for (Object[] row : regrasAtivas) {
+                    if (row != null && row.length >= 2 && row[0] instanceof Long idPedestre && row[1] instanceof String nomeRegra) {
+                        mapaRegraPorPedestre.putIfAbsent(idPedestre, nomeRegra);
+                    }
+                }
+                page.getContent().forEach(resumo ->
+                        resumo.setNomeRegraAtiva(mapaRegraPorPedestre.get(resumo.getId()))
+                );
+            }
+        }
+
+        return page;
+    }
 
     @Override
     @Transactional(readOnly = true)
