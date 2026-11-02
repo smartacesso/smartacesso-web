@@ -27,11 +27,28 @@ public class ConsultaRegraUseCase {
             TipoRegra tipo,
             Pageable pageable) {
 
+        return execute(nome, idEmpresa, nomeEmpresa, tipoPedestre, tipo, false, pageable);
+    }
+
+    public Page<Regra> execute(
+            String nome,
+            Long idEmpresa,
+            String nomeEmpresa,
+            TipoPedestre tipoPedestre,
+            TipoRegra tipo,
+            boolean incluirAmbos,
+            Pageable pageable) {
+
         Usuario loggedUser = usuarioGateway.findLoggedUser()
                 .orElseThrow(() -> new BusinessException("Usuário logado não encontrado"));
 
         if (loggedUser.getCliente() == null || loggedUser.getCliente().getId() == null) {
             throw new BusinessException("Usuário logado não possui cliente associado");
+        }
+
+        if (incluirAmbos && tipoPedestre != null) {
+            return regraGateway.buscarRegrasCompativeis(
+                    loggedUser.getCliente().getId(), nome, idEmpresa, nomeEmpresa, tipoPedestre, tipo, pageable);
         }
 
         return regraGateway.buscarRegras(

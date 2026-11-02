@@ -54,6 +54,29 @@ public class RegraGatewayImpl implements RegraGateway {
 
     @Override
     @Transactional(readOnly = true)
+    public Page<Regra> buscarRegrasCompativeis(
+            Long idCliente,
+            String nome,
+            Long idEmpresa,
+            String nomeEmpresa,
+            TipoPedestre tipoPedestre,
+            TipoRegra tipo,
+            Pageable pageable) {
+
+        return regraRepository.buscarRegrasCompativeis(
+                        idCliente,
+                        nome,
+                        idEmpresa,
+                        nomeEmpresa,
+                        tipoPedestre,
+                        TipoPedestre.AMBOS,
+                        tipo,
+                        pageable)
+                .map(entity -> regraMapper.toDomain(entity, new CycleAvoidingMappingContext()));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Optional<Regra> findById(Long id) {
         return regraRepository.findByIdComplete(id)
                 .map(entity -> regraMapper.toDomain(entity, new CycleAvoidingMappingContext()));

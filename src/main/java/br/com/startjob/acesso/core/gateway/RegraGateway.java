@@ -20,6 +20,16 @@ public interface RegraGateway {
             Pageable pageable
     );
 
+    Page<Regra> buscarRegrasCompativeis(
+            Long idCliente,
+            String nome,
+            Long idEmpresa,
+            String nomeEmpresa,
+            TipoPedestre tipoPedestre,
+            TipoRegra tipo,
+            Pageable pageable
+    );
+
     Optional<Regra> findById(Long id);
 
     Optional<Regra> findByNomeAndCliente(String nome, Long idCliente);

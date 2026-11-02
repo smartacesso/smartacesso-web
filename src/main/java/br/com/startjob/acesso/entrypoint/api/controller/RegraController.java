@@ -28,7 +28,7 @@ public class RegraController {
     private final SalvarRegraUseCase salvarRegraUseCase;
     private final ExcluirRegraUseCase excluirRegraUseCase;
 
-    @Operation(summary = "Lista regras de acesso paginadas com filtros por nome, empresa vinculada, tipo pedestre e tipo de regra")
+    @Operation(summary = "Lista regras de acesso paginadas com filtros por nome, empresa vinculada, tipo pedestre compatível e tipo de regra")
     @GetMapping
     public ResponseEntity<PageResponse<RegraResponse>> buscarRegras(
             @RequestParam(required = false) String nome,
@@ -38,17 +38,20 @@ public class RegraController {
             @RequestParam(required = false) TipoPedestre tipoPedestre,
             @RequestParam(required = false) TipoRegra tipo,
             @RequestParam(required = false) TipoRegra tipoRegra,
+            @RequestParam(name = "incluirAmbos", defaultValue = "false") boolean incluirAmbos,
             Pageable pageable) {
 
         TipoRegra tipoFinal = tipo != null ? tipo : tipoRegra;
         String nomeEmpresaFinal = nomeEmpresa != null ? nomeEmpresa : empresa;
 
-        log.info("Buscando regras paginadas. Filtros - nome: {}, idEmpresa: {}, empresa: {}, tipoPedestre: {}, tipo: {}",
-                nome, idEmpresa, nomeEmpresaFinal, tipoPedestre, tipoFinal);
+        log.info("Buscando regras paginadas. Filtros - nome: {}, idEmpresa: {}, empresa: {}, tipoPedestre: {}, incluirAmbos: {}, tipo: {}",
+                nome, idEmpresa, nomeEmpresaFinal, tipoPedestre, incluirAmbos, tipoFinal);
 
+        var regras = incluirAmbos
+                ? consultaRegraUseCase.execute(nome, idEmpresa, nomeEmpresaFinal, tipoPedestre, tipoFinal, true, pageable)
+                : consultaRegraUseCase.execute(nome, idEmpresa, nomeEmpresaFinal, tipoPedestre, tipoFinal, pageable);
         PageResponse<RegraResponse> page = PageResponse.from(
-                consultaRegraUseCase.execute(nome, idEmpresa, nomeEmpresaFinal, tipoPedestre, tipoFinal, pageable)
-                        .map(RegraResponse::fromDomain));
+                regras.map(RegraResponse::fromDomain));
 
         return ResponseEntity.ok(page);
     }

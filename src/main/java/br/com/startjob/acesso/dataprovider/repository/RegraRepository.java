@@ -54,4 +54,37 @@ public interface RegraRepository extends JpaRepository<RegraEntity, Long> {
             @Param("tipo") TipoRegra tipo,
             Pageable pageable
     );
+
+    @Query(value = """
+            select r from RegraEntity r
+            left join fetch r.empresa e
+            where r.cliente.id = :idCliente
+              and (:nome is null or lower(r.nome) like lower(concat('%', :nome, '%')))
+              and (:idEmpresa is null or e.id = :idEmpresa)
+              and (:nomeEmpresa is null or lower(e.nome) like lower(concat('%', :nomeEmpresa, '%')))
+              and (r.tipoPedestre = :tipoPedestre or r.tipoPedestre = :tipoAmbos)
+              and (:tipo is null or r.tipo = :tipo)
+              and (r.removido = false or r.removido is null)
+            """,
+            countQuery = """
+            select count(r) from RegraEntity r
+            left join r.empresa e
+            where r.cliente.id = :idCliente
+              and (:nome is null or lower(r.nome) like lower(concat('%', :nome, '%')))
+              and (:idEmpresa is null or e.id = :idEmpresa)
+              and (:nomeEmpresa is null or lower(e.nome) like lower(concat('%', :nomeEmpresa, '%')))
+              and (r.tipoPedestre = :tipoPedestre or r.tipoPedestre = :tipoAmbos)
+              and (:tipo is null or r.tipo = :tipo)
+              and (r.removido = false or r.removido is null)
+            """)
+    Page<RegraEntity> buscarRegrasCompativeis(
+            @Param("idCliente") Long idCliente,
+            @Param("nome") String nome,
+            @Param("idEmpresa") Long idEmpresa,
+            @Param("nomeEmpresa") String nomeEmpresa,
+            @Param("tipoPedestre") TipoPedestre tipoPedestre,
+            @Param("tipoAmbos") TipoPedestre tipoAmbos,
+            @Param("tipo") TipoRegra tipo,
+            Pageable pageable
+    );
 }
