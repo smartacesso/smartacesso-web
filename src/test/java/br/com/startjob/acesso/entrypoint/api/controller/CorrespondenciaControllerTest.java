@@ -1,10 +1,12 @@
 package br.com.startjob.acesso.entrypoint.api.controller;
 
 import br.com.startjob.acesso.core.domain.correspondencia.Correspondencia;
+import br.com.startjob.acesso.core.domain.correspondencia.CorrespondenciaFiltro;
 import br.com.startjob.acesso.core.domain.pedestre.Pedestre;
 import br.com.startjob.acesso.core.domain.usuario.Usuario;
 import br.com.startjob.acesso.core.exception.BusinessException;
 import br.com.startjob.acesso.core.usecase.correspondencia.ConfirmarRetiradaCorrespondenciaUseCase;
+import br.com.startjob.acesso.core.usecase.correspondencia.ConsultaCorrespondenciaUseCase;
 import br.com.startjob.acesso.core.usecase.correspondencia.ExcluirCorrespondenciaUseCase;
 import br.com.startjob.acesso.core.usecase.correspondencia.SalvarCorrespondenciaUseCase;
 import br.com.startjob.acesso.entrypoint.api.handler.GlobalExceptionHandler;
@@ -12,26 +14,38 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
 class CorrespondenciaControllerTest {
+
+    @Mock
+    private ConsultaCorrespondenciaUseCase consultaCorrespondenciaUseCase;
 
     @Mock
     private SalvarCorrespondenciaUseCase salvarCorrespondenciaUseCase;
@@ -51,7 +65,77 @@ class CorrespondenciaControllerTest {
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(correspondenciaController)
                 .setControllerAdvice(new GlobalExceptionHandler())
+                .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
                 .build();
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/correspondencias deve retornar 200 OK com correspondências paginadas filtradas")
+    void deveBuscarCorrespondenciasPaginadasComFiltros() throws Exception {
+        Correspondencia item = Correspondencia.builder()
+                .id(1L)
+                .destinatario(Pedestre.builder().id(50L).nome("Morador Maria").cpf("12345678900").build())
+                .usuarioRecebeu(Usuario.builder().id(10L).nome("Porteiro João").build())
+                .tipo("PACOTE")
+                .codigoRastreio("BR123456789")
+                .observacao("Caixa amassada")
+                .confirmaRetirada("N")
+                .dataRecebimento(LocalDateTime.of(2026, 11, 7, 10, 0))
+                .build();
+
+        Page<Correspondencia> page = new PageImpl<>(List.of(item), PageRequest.of(0, 6), 1);
+        when(consultaCorrespondenciaUseCase.execute(any(CorrespondenciaFiltro.class), any())).thenReturn(page);
+
+        mockMvc.perform(get("/api/v1/correspondencias")
+                        .param("nomeDestinatario", "Maria")
+                        .param("codigoRastreio", "BR123456789")
+                        .param("tipo", "PACOTE")
+                        .param("jaRetirado", "N")
+                        .param("dataRecebimento", "2026-11-07")
+                        .param("page", "0")
+                        .param("size", "6"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].id").value(1))
+                .andExpect(jsonPath("$.content[0].idDestinatario").value(50))
+                .andExpect(jsonPath("$.content[0].nomeDestinatario").value("Morador Maria"))
+                .andExpect(jsonPath("$.content[0].tipo").value("PACOTE"))
+                .andExpect(jsonPath("$.content[0].codigoRastreio").value("BR123456789"))
+                .andExpect(jsonPath("$.content[0].confirmaRetirada").value("N"))
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.page").value(0))
+                .andExpect(jsonPath("$.size").value(6));
+
+        ArgumentCaptor<CorrespondenciaFiltro> filtroCaptor = ArgumentCaptor.forClass(CorrespondenciaFiltro.class);
+        verify(consultaCorrespondenciaUseCase, times(1)).execute(filtroCaptor.capture(), any());
+
+        CorrespondenciaFiltro filtro = filtroCaptor.getValue();
+        assertEquals("Maria", filtro.getNomeDestinatario());
+        assertEquals("BR123456789", filtro.getCodigoRastreio());
+        assertEquals("PACOTE", filtro.getTipo());
+        assertEquals("N", filtro.getConfirmaRetirada());
+        assertEquals(LocalDate.of(2026, 11, 7), filtro.getDataRecebimento());
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/correspondencias/{id} deve retornar 200 OK com dados da correspondência")
+    void deveBuscarCorrespondenciaPorIdComSucesso() throws Exception {
+        Correspondencia item = Correspondencia.builder()
+                .id(1L)
+                .destinatario(Pedestre.builder().id(50L).nome("Morador Maria").build())
+                .tipo("CARTA")
+                .confirmaRetirada("N")
+                .build();
+
+        when(consultaCorrespondenciaUseCase.buscarPorId(1L)).thenReturn(item);
+
+        mockMvc.perform(get("/api/v1/correspondencias/{id}", 1L))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.idDestinatario").value(50))
+                .andExpect(jsonPath("$.nomeDestinatario").value("Morador Maria"))
+                .andExpect(jsonPath("$.tipo").value("CARTA"));
+
+        verify(consultaCorrespondenciaUseCase, times(1)).buscarPorId(1L);
     }
 
     @Test

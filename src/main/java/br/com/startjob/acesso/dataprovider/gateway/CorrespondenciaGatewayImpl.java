@@ -1,6 +1,7 @@
 package br.com.startjob.acesso.dataprovider.gateway;
 
 import br.com.startjob.acesso.core.domain.correspondencia.Correspondencia;
+import br.com.startjob.acesso.core.domain.correspondencia.CorrespondenciaFiltro;
 import br.com.startjob.acesso.core.gateway.CorrespondenciaGateway;
 import br.com.startjob.acesso.dataprovider.entity.CorrespondenciaEntity;
 import br.com.startjob.acesso.dataprovider.mapper.CorrespondenciaMapper;
@@ -10,9 +11,15 @@ import br.com.startjob.acesso.dataprovider.repository.CorrespondenciaRepository;
 import br.com.startjob.acesso.dataprovider.repository.PedestreRepository;
 import br.com.startjob.acesso.dataprovider.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -24,6 +31,39 @@ public class CorrespondenciaGatewayImpl implements CorrespondenciaGateway {
     private final UsuarioRepository usuarioRepository;
     private final ClienteRepository clienteRepository;
     private final CorrespondenciaMapper correspondenciaMapper;
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<Correspondencia> buscarCorrespondencias(Long idCliente, CorrespondenciaFiltro filtro, Pageable pageable) {
+        CorrespondenciaFiltro f = filtro != null ? filtro : new CorrespondenciaFiltro();
+
+        LocalDateTime dataInicio = f.getDataRecebimento() != null
+                ? f.getDataRecebimento().atStartOfDay()
+                : null;
+        LocalDateTime dataFim = f.getDataRecebimento() != null
+                ? f.getDataRecebimento().atTime(LocalTime.MAX)
+                : null;
+
+        Pageable effectivePageable = (pageable == null || pageable.getSort().isUnsorted())
+                ? PageRequest.of(
+                        pageable != null ? pageable.getPageNumber() : 0,
+                        pageable != null ? pageable.getPageSize() : 10,
+                        Sort.by(Sort.Order.desc("dataRecebimento"), Sort.Order.desc("id"))
+                )
+                : pageable;
+
+        return correspondenciaRepository.buscarCorrespondencias(
+                        idCliente,
+                        f.getNomeDestinatario(),
+                        f.getCodigoRastreio(),
+                        f.getTipo(),
+                        f.getConfirmaRetirada(),
+                        dataInicio,
+                        dataFim,
+                        effectivePageable
+                )
+                .map(entity -> correspondenciaMapper.toDomain(entity, new CycleAvoidingMappingContext()));
+    }
 
     @Override
     @Transactional(readOnly = true)

@@ -2,6 +2,7 @@ package br.com.startjob.acesso.dataprovider.gateway;
 
 import br.com.startjob.acesso.core.domain.cliente.Cliente;
 import br.com.startjob.acesso.core.domain.correspondencia.Correspondencia;
+import br.com.startjob.acesso.core.domain.correspondencia.CorrespondenciaFiltro;
 import br.com.startjob.acesso.core.domain.pedestre.Pedestre;
 import br.com.startjob.acesso.core.domain.usuario.Usuario;
 import br.com.startjob.acesso.dataprovider.entity.ClienteEntity;
@@ -19,8 +20,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -48,6 +56,46 @@ class CorrespondenciaGatewayImplTest {
 
     @InjectMocks
     private CorrespondenciaGatewayImpl correspondenciaGateway;
+
+    @Test
+    @DisplayName("buscarCorrespondencias deve converter dataRecebimento para intervalo inicio/fim do dia e mapear página")
+    void deveBuscarCorrespondenciasPaginadasComFiltros() {
+        LocalDate data = LocalDate.of(2026, 11, 7);
+        CorrespondenciaFiltro filtro = CorrespondenciaFiltro.builder()
+                .nomeDestinatario("Maria")
+                .codigoRastreio("BR123")
+                .tipo("PACOTE")
+                .confirmaRetirada("N")
+                .dataRecebimento(data)
+                .build();
+
+        CorrespondenciaEntity entity = new CorrespondenciaEntity();
+        entity.setId(100L);
+        entity.setTipo("PACOTE");
+
+        Page<CorrespondenciaEntity> pageEntities = new PageImpl<>(List.of(entity));
+        when(correspondenciaRepository.buscarCorrespondencias(
+                eq(1L),
+                eq("Maria"),
+                eq("BR123"),
+                eq("PACOTE"),
+                eq("N"),
+                eq(data.atStartOfDay()),
+                eq(data.atTime(LocalTime.MAX)),
+                any(Pageable.class)
+        )).thenReturn(pageEntities);
+
+        Correspondencia domain = Correspondencia.builder().id(100L).tipo("PACOTE").build();
+        when(correspondenciaMapper.toDomain(eq(entity), any())).thenReturn(domain);
+
+        Page<Correspondencia> resultado = correspondenciaGateway.buscarCorrespondencias(
+                1L, filtro, PageRequest.of(0, 6)
+        );
+
+        assertNotNull(resultado);
+        assertEquals(1, resultado.getTotalElements());
+        assertEquals(100L, resultado.getContent().get(0).getId());
+    }
 
     @Test
     @DisplayName("save deve persistir nova CorrespondenciaEntity associando referências JPA")
