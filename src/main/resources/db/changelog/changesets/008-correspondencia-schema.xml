@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    logicalFilePath="db/changelog/changesets/008-correspondencia-schema.xml"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.24.xsd">
+
+    <changeSet id="008-correspondencia-schema" author="antigravity">
+
+        <!-- ID Generator -->
+        <insert tableName="TB_ID_GENERATOR">
+            <column name="GEN_NAME" value="TB_CORRESPONDENCIA"/>
+            <column name="GEN_VALUE" valueNumeric="0"/>
+        </insert>
+
+        <!-- TB_CORRESPONDENCIA -->
+        <createTable tableName="TB_CORRESPONDENCIA">
+            <column name="ID_CORRESPONDENCIA" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="DATA_CRIACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="DATA_ALTERACAO" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VERSAO" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="REMOVIDO" type="CHAR(1)"/>
+            <column name="DATA_REMOVIDO" type="DATETIME"/>
+            <column name="UNIQUE_ID" type="VARCHAR(36)"/>
+
+            <column name="ID_PEDESTRE" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ID_USUARIO_RECEBEU" type="BIGINT"/>
+            <column name="TIPO_VOLUME" type="VARCHAR(255)"/>
+            <column name="CODIGO_RASTREIO" type="VARCHAR(100)"/>
+            <column name="ID_ARQUIVO_FOTO" type="BIGINT"/>
+            <column name="DATA_RECEBIMENTO" type="DATETIME"/>
+            <column name="CONFIRMA_RETIRADA" type="VARCHAR(1)"/>
+            <column name="DATA_RETIRADA" type="DATETIME"/>
+            <column name="OBSERVACAO" type="VARCHAR(500)"/>
+            <column name="FOTO_VOLUME" type="BLOB"/>
+            <column name="EXTENSAO_FOTO" type="VARCHAR(10)"/>
+            <column name="ID_CLIENTE" type="BIGINT"/>
+            <column name="NOME_QUEM_RETIROU" type="VARCHAR(150)"/>
+            <column name="DOC_QUEM_RETIROU" type="VARCHAR(50)"/>
+        </createTable>
+
+        <!-- Foreign Keys -->
+        <addForeignKeyConstraint baseTableName="TB_CORRESPONDENCIA" baseColumnNames="ID_PEDESTRE"
+                                 constraintName="FK_CORRESPONDENCIA_PEDESTRE" referencedTableName="TB_PEDESTRE" referencedColumnNames="ID_PEDESTRE"/>
+        <addForeignKeyConstraint baseTableName="TB_CORRESPONDENCIA" baseColumnNames="ID_USUARIO_RECEBEU"
+                                 constraintName="FK_CORRESPONDENCIA_USUARIO" referencedTableName="TB_USUARIO" referencedColumnNames="ID_USUARIO"/>
+        <addForeignKeyConstraint baseTableName="TB_CORRESPONDENCIA" baseColumnNames="ID_CLIENTE"
+                                 constraintName="FK_CORRESPONDENCIA_CLIENTE" referencedTableName="TB_CLIENTE" referencedColumnNames="ID_CLIENTE"/>
+
+    </changeSet>
+
+</databaseChangeLog>
