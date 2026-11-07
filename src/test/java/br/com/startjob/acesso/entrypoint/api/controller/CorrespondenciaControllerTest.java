@@ -4,6 +4,7 @@ import br.com.startjob.acesso.core.domain.correspondencia.Correspondencia;
 import br.com.startjob.acesso.core.domain.pedestre.Pedestre;
 import br.com.startjob.acesso.core.domain.usuario.Usuario;
 import br.com.startjob.acesso.core.exception.BusinessException;
+import br.com.startjob.acesso.core.usecase.correspondencia.ConfirmarRetiradaCorrespondenciaUseCase;
 import br.com.startjob.acesso.core.usecase.correspondencia.ExcluirCorrespondenciaUseCase;
 import br.com.startjob.acesso.core.usecase.correspondencia.SalvarCorrespondenciaUseCase;
 import br.com.startjob.acesso.entrypoint.api.handler.GlobalExceptionHandler;
@@ -37,6 +38,9 @@ class CorrespondenciaControllerTest {
 
     @Mock
     private ExcluirCorrespondenciaUseCase excluirCorrespondenciaUseCase;
+
+    @Mock
+    private ConfirmarRetiradaCorrespondenciaUseCase confirmarRetiradaCorrespondenciaUseCase;
 
     @InjectMocks
     private CorrespondenciaController correspondenciaController;
@@ -144,6 +148,62 @@ class CorrespondenciaControllerTest {
                 .andExpect(jsonPath("$.message").value("Você não possui permissão para salvar correspondências."));
 
         verify(salvarCorrespondenciaUseCase, times(1)).execute(any(Correspondencia.class), eq(false));
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/correspondencias/{id}/confirmar-retirada deve retornar 200 OK quando retirada confirmada com sucesso")
+    void deveConfirmarRetiradaComSucesso() throws Exception {
+        Correspondencia atualizada = Correspondencia.builder()
+                .id(10L)
+                .destinatario(Pedestre.builder().id(50L).nome("Morador Maria").build())
+                .tipo("PACOTE")
+                .confirmaRetirada("S")
+                .dataRetirada(LocalDateTime.of(2026, 11, 7, 11, 0))
+                .nomeQuemRetirou("João da Silva")
+                .documentoQuemRetirou("12345678900")
+                .build();
+
+        when(confirmarRetiradaCorrespondenciaUseCase.execute(10L, "João da Silva", "12345678900"))
+                .thenReturn(atualizada);
+
+        String jsonRequest = """
+                {
+                    "nomeQuemRetirou": "João da Silva",
+                    "documentoQuemRetirou": "12345678900"
+                }
+                """;
+
+        mockMvc.perform(post("/api/v1/correspondencias/{id}/confirmar-retirada", 10L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(10))
+                .andExpect(jsonPath("$.confirmaRetirada").value("S"))
+                .andExpect(jsonPath("$.nomeQuemRetirou").value("João da Silva"))
+                .andExpect(jsonPath("$.documentoQuemRetirou").value("12345678900"));
+
+        verify(confirmarRetiradaCorrespondenciaUseCase, times(1))
+                .execute(10L, "João da Silva", "12345678900");
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/correspondencias/{id}/confirmar-retirada deve retornar 400 Bad Request quando nome ou documento vazios")
+    void deveRetornar400AoConfirmarRetiradaComCamposVazios() throws Exception {
+        String jsonInvalido = """
+                {
+                    "nomeQuemRetirou": "",
+                    "documentoQuemRetirou": ""
+                }
+                """;
+
+        mockMvc.perform(post("/api/v1/correspondencias/{id}/confirmar-retirada", 10L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonInvalido))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+
+        verify(confirmarRetiradaCorrespondenciaUseCase, never()).execute(any(), any(), any());
     }
 
     @Test

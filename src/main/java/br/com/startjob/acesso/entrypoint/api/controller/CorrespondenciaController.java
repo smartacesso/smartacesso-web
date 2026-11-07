@@ -1,7 +1,9 @@
 package br.com.startjob.acesso.entrypoint.api.controller;
 
+import br.com.startjob.acesso.core.usecase.correspondencia.ConfirmarRetiradaCorrespondenciaUseCase;
 import br.com.startjob.acesso.core.usecase.correspondencia.ExcluirCorrespondenciaUseCase;
 import br.com.startjob.acesso.core.usecase.correspondencia.SalvarCorrespondenciaUseCase;
+import br.com.startjob.acesso.entrypoint.api.dto.ConfirmarRetiradaCorrespondenciaRequest;
 import br.com.startjob.acesso.entrypoint.api.dto.CorrespondenciaResponse;
 import br.com.startjob.acesso.entrypoint.api.dto.SalvarCorrespondenciaRequest;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,6 +28,7 @@ public class CorrespondenciaController {
 
     private final SalvarCorrespondenciaUseCase salvarCorrespondenciaUseCase;
     private final ExcluirCorrespondenciaUseCase excluirCorrespondenciaUseCase;
+    private final ConfirmarRetiradaCorrespondenciaUseCase confirmarRetiradaCorrespondenciaUseCase;
 
     @Operation(summary = "Cria ou edita uma correspondência")
     @PostMapping
@@ -39,6 +42,24 @@ public class CorrespondenciaController {
         var salva = salvarCorrespondenciaUseCase.execute(request.toDomain(), removerFoto);
 
         return ResponseEntity.ok(CorrespondenciaResponse.fromDomain(salva));
+    }
+
+    @Operation(summary = "Confirma a retirada de uma correspondência informando nome e documento de quem retirou")
+    @PostMapping("/{id}/confirmar-retirada")
+    public ResponseEntity<CorrespondenciaResponse> confirmarRetirada(
+            @PathVariable Long id,
+            @Valid @RequestBody ConfirmarRetiradaCorrespondenciaRequest request) {
+
+        log.info("Confirmando retirada de correspondência - id: {}, nomeQuemRetirou: {}",
+                id, request.nomeQuemRetirou());
+
+        var correspondencia = confirmarRetiradaCorrespondenciaUseCase.execute(
+                id,
+                request.nomeQuemRetirou(),
+                request.documentoQuemRetirou()
+        );
+
+        return ResponseEntity.ok(CorrespondenciaResponse.fromDomain(correspondencia));
     }
 
     @Operation(summary = "Exclui uma correspondência")
