@@ -1,5 +1,6 @@
 package br.com.startjob.acesso.entrypoint.api.controller;
 
+import br.com.startjob.acesso.core.usecase.correspondencia.ExcluirCorrespondenciaUseCase;
 import br.com.startjob.acesso.core.usecase.correspondencia.SalvarCorrespondenciaUseCase;
 import br.com.startjob.acesso.entrypoint.api.dto.CorrespondenciaResponse;
 import br.com.startjob.acesso.entrypoint.api.dto.SalvarCorrespondenciaRequest;
@@ -9,6 +10,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class CorrespondenciaController {
 
     private final SalvarCorrespondenciaUseCase salvarCorrespondenciaUseCase;
+    private final ExcluirCorrespondenciaUseCase excluirCorrespondenciaUseCase;
 
     @Operation(summary = "Cria ou edita uma correspondência")
     @PostMapping
@@ -35,5 +39,15 @@ public class CorrespondenciaController {
         var salva = salvarCorrespondenciaUseCase.execute(request.toDomain(), removerFoto);
 
         return ResponseEntity.ok(CorrespondenciaResponse.fromDomain(salva));
+    }
+
+    @Operation(summary = "Exclui uma correspondência")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> excluirCorrespondencia(@PathVariable Long id) {
+        log.info("Excluindo correspondência - id: {}", id);
+
+        excluirCorrespondenciaUseCase.execute(id);
+
+        return ResponseEntity.noContent().build();
     }
 }

@@ -4,6 +4,7 @@ import br.com.startjob.acesso.core.domain.correspondencia.Correspondencia;
 import br.com.startjob.acesso.core.domain.pedestre.Pedestre;
 import br.com.startjob.acesso.core.domain.usuario.Usuario;
 import br.com.startjob.acesso.core.exception.BusinessException;
+import br.com.startjob.acesso.core.usecase.correspondencia.ExcluirCorrespondenciaUseCase;
 import br.com.startjob.acesso.core.usecase.correspondencia.SalvarCorrespondenciaUseCase;
 import br.com.startjob.acesso.entrypoint.api.handler.GlobalExceptionHandler;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +24,7 @@ import java.util.Base64;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -32,6 +34,9 @@ class CorrespondenciaControllerTest {
 
     @Mock
     private SalvarCorrespondenciaUseCase salvarCorrespondenciaUseCase;
+
+    @Mock
+    private ExcluirCorrespondenciaUseCase excluirCorrespondenciaUseCase;
 
     @InjectMocks
     private CorrespondenciaController correspondenciaController;
@@ -139,5 +144,46 @@ class CorrespondenciaControllerTest {
                 .andExpect(jsonPath("$.message").value("Você não possui permissão para salvar correspondências."));
 
         verify(salvarCorrespondenciaUseCase, times(1)).execute(any(Correspondencia.class), eq(false));
+    }
+
+    @Test
+    @DisplayName("DELETE /api/v1/correspondencias/{id} deve retornar 204 No Content quando sucesso")
+    void deveExcluirCorrespondenciaComSucesso() throws Exception {
+        doNothing().when(excluirCorrespondenciaUseCase).execute(10L);
+
+        mockMvc.perform(delete("/api/v1/correspondencias/{id}", 10L))
+                .andExpect(status().isNoContent());
+
+        verify(excluirCorrespondenciaUseCase, times(1)).execute(10L);
+    }
+
+    @Test
+    @DisplayName("DELETE /api/v1/correspondencias/{id} deve retornar 400 Bad Request quando sem permissão")
+    void deveRetornar400QuandoSemPermissaoAoExcluir() throws Exception {
+        doThrow(new BusinessException("Você não possui permissão para excluir correspondências."))
+                .when(excluirCorrespondenciaUseCase).execute(10L);
+
+        mockMvc.perform(delete("/api/v1/correspondencias/{id}", 10L))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.code").value("BUSINESS_ERROR"))
+                .andExpect(jsonPath("$.message").value("Você não possui permissão para excluir correspondências."));
+
+        verify(excluirCorrespondenciaUseCase, times(1)).execute(10L);
+    }
+
+    @Test
+    @DisplayName("DELETE /api/v1/correspondencias/{id} deve retornar 400 Bad Request quando correspondência não encontrada")
+    void deveRetornar400QuandoCorrespondenciaNaoEncontradaAoExcluir() throws Exception {
+        doThrow(new BusinessException("Correspondência não encontrada."))
+                .when(excluirCorrespondenciaUseCase).execute(99L);
+
+        mockMvc.perform(delete("/api/v1/correspondencias/{id}", 99L))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.code").value("BUSINESS_ERROR"))
+                .andExpect(jsonPath("$.message").value("Correspondência não encontrada."));
+
+        verify(excluirCorrespondenciaUseCase, times(1)).execute(99L);
     }
 }
